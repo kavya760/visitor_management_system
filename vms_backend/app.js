@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
-
+const users = require('./routes/users');
 
 const app = express();
 const db = mysql.createConnection({
@@ -19,39 +19,30 @@ db.connect((error) => {
         console.log("MySQL Connected");
     }
 });
+
 app.use(cors());
-app.use(express.json()); 
+app.use(express.json());
 
 app.get('/api/locations', (req, res) => {
-    const query = 'SELECT * FROM locations'; 
+    const query = 'SELECT * FROM locations';
     db.query(query, (err, results) => {
-      if (err) throw err;
-      res.json(results);
+        if (err) throw err;
+        res.json(results);
     });
-  });
-
-
-//   app.get('/api/hosts', (req, res) => {
-//     const query = 'SELECT * FROM hosts'; 
-//     db.query(query, (err, results) => {
-//       if (err) throw err;
-//       res.json(results);
-//     });
-//   });
+});
 
 app.get('/api/visittypes', (req, res) => {
-    const query = 'SELECT * FROM visittypes'; 
+    const query = 'SELECT * FROM visittypes';
     db.query(query, (err, results) => {
-      if (err) throw err;
-      res.json(results);
+        if (err) throw err;
+        res.json(results);
     });
-  });
-  
-// app.use('/api/logbook', logbookRoutes);
-// app.use('/api/user', userRoutes);
-// app.use('/api/invitation', invitationRoutes);
-// app.use('/api/dashboard', dashboardRoutes);
+});
 
+app.use('/api/users', (req, res, next) => {
+    req.db = db; 
+    next();
+}, users);
 
 app.listen(5000, (error) => {
     if (error) {
@@ -61,3 +52,5 @@ app.listen(5000, (error) => {
         console.log("Server starting on port 5000.");
     }
 });
+
+module.exports = db;

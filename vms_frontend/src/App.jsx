@@ -11,8 +11,8 @@ import WelCome from './pages/WelCome';
 import Invitations from './pages/Invitations';
 import DashBoard from './pages/DashBoard';
 import LogBook from './pages/LogBook';
-import SideBar from './components/SideBar';
-import NavBar from './components/NavBar';
+import SideNav from './components/SideNav';
+
 
 function App() {
 
@@ -24,9 +24,9 @@ function App() {
   return (
     <BrowserRouter>
       <div className="wrapper">
-        <NavBar/>
        
-        <SideBar />
+       
+        <SideNav />
     
         <div className="content-wrapper">
           <Routes>
