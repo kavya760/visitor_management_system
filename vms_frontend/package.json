@@ -13,6 +13,8 @@
     "@fortawesome/fontawesome-free": "^6.6.0",
     "admin-lte": "^4.0.0-beta1",
     "adminlte-2-react": "^0.2.2-beta.3",
+    "ag-grid-community": "^32.0.2",
+    "ag-grid-react": "^32.0.2",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",

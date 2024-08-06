@@ -2,7 +2,7 @@ import React from 'react'
 
 function DashBoard() {
   return (
-    <div className="container">Heello Dashboards</div>
+    <div className="container">Heello Dashboard</div>
     
 
   )

@@ -53,3 +53,17 @@
 .navbar-custom .nav-link:hover {
   color: #dcdcdc; 
 }
+.ag-theme-quartz .ag-cell {
+  border: 1px solid #ccc; /* Change to a thinner border or a different color if needed */
+}
+
+/* Reduce padding within cells */
+.ag-theme-quartz .ag-cell {
+  padding: 4px; /* Adjust the padding value as needed */
+}
+
+/* Adjust header cell borders and padding */
+.ag-theme-quartz .ag-header-cell {
+  border-bottom: 1px solid #ccc; /* Change to a thinner border if needed */
+  padding: 4px; /* Adjust the padding value as needed */
+}
