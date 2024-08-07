@@ -80,7 +80,8 @@ app.get('/api/get_users', async (req, res) => {
 app.get('/api/visits', async (req, res) => {
     const query = `
         SELECT 
-            v.visit_date_time, 
+            v.visit_date, 
+            v.visit_time,
             v.purpose, 
             v.status, 
             v.visit_id,
@@ -105,10 +106,9 @@ app.get('/api/visits', async (req, res) => {
     `;
     try {
         const [results] = await req.db.query(query);
-
-        // Transform results to have nested visitor and host objects
         const transformedResults = results.map(row => ({
-            visit_date_time: row.visit_date_time,
+            visit_date: row.visit_date,
+            visit_time: row.visit_time,
             purpose: row.purpose,
             status: row.status,
             visit_id: row.visit_id,

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
-function SchedulevisitForm() {
+function SchedulevisitForm({onChange}) {
   const [locations, setLocations] = useState([]);
   const [visittypes, setVisittypes] = useState([]);
   const [error, setError] = useState(null);
@@ -18,30 +20,35 @@ function SchedulevisitForm() {
     host_id: '',
     visit_type_id: ''
   });
+
+  
   const [editMode, setEditMode] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   useEffect(() => {
+    fetchData();
+  }, []);
+
+
+  const handleDataChange = () => {
+    fetchVisits(); // Refresh the grid data
+  };
+
+
     const fetchData = async () => {
       try {
         const locationsRes = await axios.get('http://localhost:5000/api/locations');
         const visitTypesRes = await axios.get('http://localhost:5000/api/visittypes');
         const usersRes = await axios.get('http://localhost:5000/api/get_users');
-        
-
         setLocations(locationsRes.data);
         setVisittypes(visitTypesRes.data);
-        setUsers(usersRes.data);
-  
-        
+        setUsers(usersRes.data);        
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error.message);
       }
     };
-    fetchData();
-  }, []);
-
+   
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -49,13 +56,22 @@ function SchedulevisitForm() {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
+      const formattedDate = new Date(formData.date).toISOString().split('T')[0];  
+      const formattedTime = new Date(formData.date).toTimeString().split(' ')[0];
+      const dataToSend = {
+        ...formData,
+        visit_date: formattedDate,
+        visit_time: formattedTime
+    };
       console.log("Form Data being sent:", formData);
-      await axios.post('http://localhost:5000/api/users/create', formData);
-      alert('User created successfully');
-      resetForm();
+      await axios.post('http://localhost:5000/api/users/create', dataToSend);
+      toast.success("User created successfully!");
+      onChange();
+      
+      
     } catch (error) {
+      toast.error("Error creating User!");
       console.error('Error creating user:', error);
-      setError('Failed to create user');
     }
   };
 
@@ -63,11 +79,11 @@ function SchedulevisitForm() {
     e.preventDefault();
     try {
       await axios.put(`http://localhost:5000/api/users/update/${selectedUserId}`, formData);
-      alert('User updated successfully');
+      toast.success("User updated successfully!");
       resetForm();
     } catch (error) {
+      toast.error("Error updating User!");
       console.error('Error updating user:', error);
-      setError('Failed to update user');
     }
   };
 
@@ -102,10 +118,10 @@ function SchedulevisitForm() {
   const handleDelete = async (user_id) => {
     try {
       await axios.delete(`http://localhost:5000/api/users/delete/${user_id}`);
-      alert('User deleted successfully');
+      toast.success("User deleted successfully!");
     } catch (error) {
+      toast.error("Error deleting User!");
       console.error('Error deleting user:', error);
-      setError(error.message);
     }
   };
 
@@ -158,7 +174,7 @@ function SchedulevisitForm() {
             ))}
           </select>
         </div>
-        <button type="submit" className="btn btn-primary mt-3">
+        <button type="submit" className="btn btn-primary mt-3" data-bs-dismiss="modal">
           {editMode ? 'Update' : 'Schedule'}
         </button>
       </form>

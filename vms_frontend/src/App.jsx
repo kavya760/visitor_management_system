@@ -6,7 +6,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'admin-lte/dist/css/adminlte.min.css'; 
 import 'jquery'; 
 import 'admin-lte/dist/js/adminlte.min'; 
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import WelCome from './pages/WelCome';
 import Invitations from './pages/Invitations';
 import DashBoard from './pages/DashBoard';
@@ -26,8 +27,19 @@ function App() {
   return (
     <BrowserRouter>
       <div className="wrapper">
-     
         <SideNav />
+        <ToastContainer 
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        />
     
         <div className="content-wrapper">
           <Routes>

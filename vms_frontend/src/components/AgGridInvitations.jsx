@@ -18,18 +18,26 @@ const AgGridInvitations = ({ rowData }) => {
     };
 
     return (
-      <div className="action-buttons">
-        <button onClick={handleApprove} className="btn btn-success me-2">Approve</button>
-        <button onClick={handleReject} className="btn btn-danger">Reject</button>
-      </div>
-    );
-  };
+       <div className="action-buttons">
+      <button onClick={handleApprove} className="btn btn-primary btn-sm me-2">Approve</button>
+      <button onClick={handleReject} className="btn btn-danger btn-sm">Reject</button>
+    </div>
+        );
+      };
 
   const columnDefs = [
-    { headerName: "Visitor_Name", field: "visitor_first_name", sortable: true, filter: true },
-    { headerName: "Visit_Date", field: "visit_date_time", sortable: true, filter: true },
-    { headerName: "Visit_Time", field: "visit_date_time", sortable: true, filter: true },
-    { headerName: "Host_Name", field: "host_first_name", sortable: true, filter: true },
+    { headerName: "Visitor Name",
+      field: "visitor_name",
+      sortable: true,
+      filter: true,
+      valueGetter: (params) => `${params.data.visitor.first_name} ${params.data.visitor.last_name}` },
+    { headerName: "Visit_Date", field: "visit_date", sortable: true, filter: true },
+    { headerName: "Visit_Time", field: "visit_time", sortable: true, filter: true },
+    { headerName: "Host Name",
+      field: "host_name",
+      sortable: true,
+      filter: true,
+      valueGetter: (params) => `${params.data.host.first_name} ${params.data.host.last_name}` },
     { headerName: "Purpose", field: "purpose", sortable: true, filter: true },
     { headerName: "Location", field: "location_name", sortable: true, filter: true },
     { headerName: "Visit_Type", field: "visit_type", sortable: true, filter: true },

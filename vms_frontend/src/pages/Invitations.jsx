@@ -10,18 +10,24 @@ function Invitations() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchVisits = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/visits'); 
-        setVisits(response.data);
-      } catch (error) {
-        console.error('Error fetching visits:', error);
-        setError('Failed to fetch visits');
-      }
-    };
-
+  
     fetchVisits();
   }, []);
+
+  const fetchVisits = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/visits'); 
+      setVisits(response.data);
+    } catch (error) {
+      console.error('Error fetching visits:', error);
+      setError('Failed to fetch visits');
+    }
+  };
+
+
+  const handleDataChange = () => {
+    fetchVisits();
+  };
 
   return (
     <div className="container">
@@ -39,7 +45,7 @@ function Invitations() {
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
-              <SchedulevisitForm />
+            <SchedulevisitForm onChange={handleDataChange} />
             </div>
           </div>
         </div>
