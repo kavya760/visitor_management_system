@@ -30,11 +30,6 @@ function SchedulevisitForm({onChange}) {
   }, []);
 
 
-  const handleDataChange = () => {
-    fetchVisits(); // Refresh the grid data
-  };
-
-
     const fetchData = async () => {
       try {
         const locationsRes = await axios.get('http://localhost:5000/api/locations');
@@ -56,7 +51,7 @@ function SchedulevisitForm({onChange}) {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const formattedDate = new Date(formData.date).toISOString().split('T')[0];  
+      const formattedDate = new Date(formData.date).toISOString().split(' ')[0];  
       const formattedTime = new Date(formData.date).toTimeString().split(' ')[0];
       const dataToSend = {
         ...formData,
@@ -65,27 +60,27 @@ function SchedulevisitForm({onChange}) {
     };
       console.log("Form Data being sent:", formData);
       await axios.post('http://localhost:5000/api/users/create', dataToSend);
-      toast.success("User created successfully!");
+      toast.success("Schedule visit created successfully!");
       onChange();
-      
-      
+      resetForm();
     } catch (error) {
-      toast.error("Error creating User!");
+      toast.error("Error creating schedule visit!");
       console.error('Error creating user:', error);
     }
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`http://localhost:5000/api/users/update/${selectedUserId}`, formData);
-      toast.success("User updated successfully!");
-      resetForm();
-    } catch (error) {
-      toast.error("Error updating User!");
-      console.error('Error updating user:', error);
-    }
-  };
+  // const handleUpdate = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     await axios.put(`http://localhost:5000/api/users/update/${selectedUserId}`, formData);
+  //     toast.success("Schedule visit updated successfully!");
+  //     onChange();
+  //     resetForm();
+  //   } catch (error) {
+  //     toast.error("Error updating Schedule visit!");
+  //     console.error('Error updating Schedule visit:', error);
+  //   }
+  // };
 
   const resetForm = () => {
     setFormData({
@@ -118,9 +113,9 @@ function SchedulevisitForm({onChange}) {
   const handleDelete = async (user_id) => {
     try {
       await axios.delete(`http://localhost:5000/api/users/delete/${user_id}`);
-      toast.success("User deleted successfully!");
+      toast.success("Schedule visit deleted successfully!");
     } catch (error) {
-      toast.error("Error deleting User!");
+      toast.error("Error deleting Schedule visit!");
       console.error('Error deleting user:', error);
     }
   };

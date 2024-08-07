@@ -4,6 +4,8 @@ import AgGridInvitations from '../components/AgGridInvitations';
 import SchedulevisitForm from '../components/SchedulevisitForm';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
+import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 function Invitations() {
   const [visits, setVisits] = useState([]);
@@ -24,6 +26,34 @@ function Invitations() {
     }
   };
 
+  const updateVisitStatus = async (id, status) => {
+    try {
+        console.log(`Updating visit with ID ${id} and status ${status}`);
+        const response = await axios.put(`http://localhost:5000/api/visits/update/${id}`, { status }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log("status:", status);
+        const newStatus = status === 'approved' ? 'Approved' : 'Rejected';
+        console.log("newstatus:", newStatus);
+
+        if (response.data.message === 'Status updated successfully') {
+            const updatedRowData = visits.map(row => {
+                if (row.visit_id === id) {
+                    return { ...row, status: status === 'approved' ? 'Approved' : 'Rejected' };
+                }
+                return row;
+            });
+            setVisits(updatedRowData); 
+            toast.success(`Visit ${status} successfully!`);
+        }
+    } catch (error) {
+        toast.error(`Error updating visit status: ${error.message}`);
+        console.error(`Error updating visit status:`, error);
+    }
+};
+
 
   const handleDataChange = () => {
     fetchVisits();
@@ -37,7 +67,7 @@ function Invitations() {
         Schedule Visit
       </button>
       </div>  
-      <AgGridInvitations rowData={visits} />
+      <AgGridInvitations rowData={visits} updateVisitStatus={updateVisitStatus} />
       <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">

@@ -60,7 +60,7 @@ const NavBar = () => {
             </a>
           </li>
         </ul>
-        <ol className="breadcrumb float-sm-left m-0">
+        <ol className="breadcrumb m-0">
           <li className="breadcrumb-item">
             <Link to="/">Home</Link>
           </li>

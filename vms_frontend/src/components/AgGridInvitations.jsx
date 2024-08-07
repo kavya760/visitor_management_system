@@ -3,18 +3,18 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
-const AgGridInvitations = ({ rowData }) => {
+const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
   console.log("Row Data:", rowData);
   
   const ActionCellRenderer = (props) => {
     const { data } = props;
 
     const handleApprove = () => {
-      console.log('Approved:', data);
+      updateVisitStatus(data.visit_id, 'approved');
     };
 
     const handleReject = () => {
-      console.log('Rejected:', data);
+      updateVisitStatus(data.visit_id, 'rejected');
     };
 
     return (

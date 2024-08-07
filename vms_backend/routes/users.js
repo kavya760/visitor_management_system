@@ -77,44 +77,7 @@ router.post('/create', async (req, res) => {
 });
 
 // Update user
-router.put('/update/:id', async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
 
-    // Validate the status
-    if (!['approved', 'rejected'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status' });
-    }
-    const updateQuery = 'UPDATE visits SET status = ? WHERE visit_id = ?';
-    
-    try {
-        const [updateResult] = await req.db.query(updateQuery, [status, id]);
-        
-        if (updateResult.affectedRows === 0) {
-            return res.status(404).json({ error: 'Visit not found' });
-        }
-        const selectQuery = 'SELECT * FROM visits WHERE visit_id = ?';
-        const [visitResult] = await req.db.query(selectQuery, [id]);
-
-        if (visitResult.length === 0) {
-            return res.status(404).json({ error: 'Visit not found after update' });
-        }
-
-        const visit = visitResult[0];
-        if (status === 'approved') {
-            // Add your logic for approved status here, e.g., sending a confirmation email
-            console.log('Visit approved:', visit);
-        } else if (status === 'rejected') {
-            // Add your logic for rejected status here, e.g., notifying rejection
-            console.log('Visit rejected:', visit);
-        }
-
-        res.json({ message: 'Status updated successfully', visit });
-    } catch (err) {
-        console.error("Error updating visit status:", err);
-        res.status(500).json({ error: 'Failed to update visit status' });
-    }
-});
 //     const { first_name, last_name, email, role_id, password, phone_number } = req.body;
 //     let hashedPassword = password; 
 

@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const users = require('./routes/users');
+const invitations = require('./routes/invitations');
 
 const app = express();
 const db = mysql.createPool({
@@ -23,6 +24,11 @@ app.use('/api/users', (req, res, next) => {
     req.db = db; 
     next();
 }, users);
+
+app.use('/api/visits', (req, res, next) => {
+    req.db = db; 
+    next();
+}, invitations);
 
 app.get('/api/locations', async (req, res) => {
     try {
@@ -55,27 +61,6 @@ app.get('/api/get_users', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch users" });
     }
 });
-
-// app.get('/api/visits', async (req, res) => {
-//     const query = `
-//         SELECT v.visit_date_time, v.purpose, v.status, 
-//                u.first_name as visitor_first_name, u.last_name as visitor_last_name,
-//                h.first_name as host_first_name, h.last_name as host_last_name,
-//                l.location_name, vt.visit_type
-//         FROM visits v
-//         INNER JOIN users u ON v.visitor_id = u.user_id
-//         INNER JOIN users h ON v.host_id = h.user_id
-//         INNER JOIN locations l ON v.location_id = l.location_id
-//         INNER JOIN visittypes vt ON v.visit_type_id = vt.visit_type_id
-//     `;
-//     try {
-//         const [results] = await req.db.query('SELECT * FROM visits');
-//         res.json(results);
-//     } catch (err) {
-//         console.error("Error fetching visits:", err);
-//         res.status(500).json({ error: "Failed to fetch visits" });
-//     }
-// });
 
 app.get('/api/visits', async (req, res) => {
     const query = `
