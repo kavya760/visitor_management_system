@@ -20,11 +20,13 @@ function Invitations() {
     try {
       const response = await axios.get('http://localhost:5000/api/visits'); 
       setVisits(response.data);
+    
     } catch (error) {
       console.error('Error fetching visits:', error);
       setError('Failed to fetch visits');
     }
   };
+  console.log("visit:",visits);
 
   const updateVisitStatus = async (id, status) => {
     try {

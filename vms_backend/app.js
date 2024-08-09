@@ -4,6 +4,8 @@ const cors = require('cors');
 const users = require('./routes/users');
 const invitations = require('./routes/invitations');
 const logBook = require('./routes/logBook');
+const moment = require('moment');
+
 
 const app = express();
 const db = mysql.createPool({
@@ -35,6 +37,7 @@ app.use('/api/visits', (req, res, next) => {
     req.db = db; 
     next();
 }, logBook);
+
 
 app.get('/api/locations', async (req, res) => {
     try {
@@ -76,6 +79,8 @@ app.get('/api/visits', async (req, res) => {
             v.purpose, 
             v.status, 
             v.visit_id,
+            v.checkin_time,    
+            v.checkout_time, 
             u1.user_id AS visitor_id, 
             u1.first_name AS visitor_first_name, 
             u1.last_name AS visitor_last_name, 
@@ -98,13 +103,16 @@ app.get('/api/visits', async (req, res) => {
     try {
         const [results] = await req.db.query(query);
         const transformedResults = results.map(row => ({
-            visit_date: row.visit_date,
-            visit_time: row.visit_time,
+          
+            visit_date: moment(row.visit_date).format('YYYY-MM-DD'),
+            visit_time:moment(row.visit_time, 'HH:mm:ss').format('h:mm:ss A'),
             purpose: row.purpose,
             status: row.status,
             visit_id: row.visit_id,
             location_name: row.location_name,
             visit_type: row.visit_type,
+            checkin_time: row.checkin_time,  
+            checkout_time: row.checkout_time,
             visitor: {
                 user_id: row.visitor_id,
                 first_name: row.visitor_first_name,
