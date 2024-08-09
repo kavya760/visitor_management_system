@@ -67,3 +67,7 @@
   border-bottom: 1px solid #ccc; /* Change to a thinner border if needed */
   padding: 4px; /* Adjust the padding value as needed */
 }
+
+.input-group {
+  margin-left: 0.5rem;
+}

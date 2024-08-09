@@ -3,6 +3,7 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const users = require('./routes/users');
 const invitations = require('./routes/invitations');
+const logBook = require('./routes/logBook');
 
 const app = express();
 const db = mysql.createPool({
@@ -29,6 +30,11 @@ app.use('/api/visits', (req, res, next) => {
     req.db = db; 
     next();
 }, invitations);
+
+app.use('/api/visits', (req, res, next) => {
+    req.db = db; 
+    next();
+}, logBook);
 
 app.get('/api/locations', async (req, res) => {
     try {
