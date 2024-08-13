@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // SidebarLink Component
 const SidebarLink = ({ to, icon, label }) => (
@@ -32,22 +32,7 @@ const Sidebar = () => (
 
 // NavBar Component
 const NavBar = () => {
-  const location = useLocation();
 
-  const getActiveBreadcrumb = () => {
-    switch (location.pathname) {
-      case '/':
-        return 'Home';
-      case '/dashboard':
-        return 'Dashboard';
-      case '/logbook':
-        return 'LogBook';
-      case '/invitations':
-        return 'Invitations';
-      default:
-        return 'Home';
-    }
-  };
 
   return (
     <>
@@ -60,14 +45,6 @@ const NavBar = () => {
             </a>
           </li>
         </ul>
-        <ol className="breadcrumb m-0">
-          <li className="breadcrumb-item">
-            <Link to="/">Home</Link>
-          </li>
-          <li className="breadcrumb-item active">
-            {getActiveBreadcrumb()}
-          </li>
-        </ol>
         <ul className="navbar-nav d-flex align-items-center ms-auto">
           <li className="nav-item">
             <i className="bi bi-box-arrow-right me-3 fs-4"></i>

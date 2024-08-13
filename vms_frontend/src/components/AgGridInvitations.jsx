@@ -17,13 +17,28 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
       updateVisitStatus(data.visit_id, 'rejected');
     };
 
+    const isApproved = data.status === 'Approved';
+    const isRejected = data.status === 'Rejected';
+
     return (
-       <div className="action-buttons">
-      <button onClick={handleApprove} className="btn btn-primary btn-sm me-2">Approve</button>
-      <button onClick={handleReject} className="btn btn-danger btn-sm">Reject</button>
-    </div>
-        );
-      };
+      <div className="action-buttons">
+        <button
+          onClick={handleApprove}
+          className="btn btn-success btn-sm me-2"
+          disabled={isApproved}
+        >
+          Approve
+        </button>
+        <button
+          onClick={handleReject}
+          className="btn btn-danger btn-sm"
+          disabled={isRejected}
+        >
+          Reject
+        </button>
+      </div>
+    );
+  };
 
   const columnDefs = [
     { headerName: "Visitor Name",
@@ -31,8 +46,8 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
       sortable: true,
       filter: true,
       valueGetter: (params) => `${params.data.visitor.first_name} ${params.data.visitor.last_name}` },
-    { headerName: "Visit_Date", field: "visit_date", sortable: true, filter: true },
-    { headerName: "Visit_Time", field: "visit_time", sortable: true, filter: true },
+    { headerName: "Visit Date", field: "visit_date", sortable: true, filter: true },
+    { headerName: "Visit Time", field: "visit_time", sortable: true, filter: true },
     { headerName: "Host Name",
       field: "host_name",
       sortable: true,
@@ -40,7 +55,7 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
       valueGetter: (params) => `${params.data.host.first_name} ${params.data.host.last_name}` },
     { headerName: "Purpose", field: "purpose", sortable: true, filter: true },
     { headerName: "Location", field: "location_name", sortable: true, filter: true },
-    { headerName: "Visit_Type", field: "visit_type", sortable: true, filter: true },
+    { headerName: "Visit Type", field: "visit_type", sortable: true, filter: true },
     { headerName: "Status", field: "status", sortable: true, filter: true },
     { 
       headerName: "Action", 

@@ -10,6 +10,7 @@ import 'pikaday/css/pikaday.css';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import { Link, useLocation } from 'react-router-dom';
 
 function LogBook() {
   const [rowData, setRowData] = useState([]);
@@ -18,6 +19,7 @@ function LogBook() {
   const [searchText, setSearchText] = useState('');
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
+  const location = useLocation();
 
 
   useEffect(() => {
@@ -41,7 +43,6 @@ function LogBook() {
 
         const filteredData = processedData.filter(visit => visit.status === 'Approved');
         setRowData(filteredData);
-        setFilteredData(filteredData);
       } catch (error) {
         console.error('Error fetching visits:', error);
         setError(error.message);
@@ -51,14 +52,30 @@ function LogBook() {
     fetchVisits();
   }, []);
 
+  const handleDataChange = (visitId, action, time) => {
+    setRowData(prevRowData =>
+      prevRowData.map(visit => {
+        if (visit.visit_id === visitId) {
+          if (action === 'checkin') {
+            return { ...visit, checkin_time: time };
+          } else if (action === 'checkout') {
+            return { ...visit, checkout_time: time };
+          }
+        }
+        return visit;
+      })
+    );
+  };
  
   useEffect(() => {
     const picker = new Pikaday({
       field: document.getElementById('datepicker'),
       format: 'DD-MM-YYYY',
       onSelect: (date) => {
-        setSelectedDate((date).format('DD-MM-YYYY'));
-      }
+        const formattedDate = moment(date).format('YYYY-MM-DD');
+        setSelectedDate(formattedDate);
+        console.log("Selected Date (in YYYY-MM-DD format):", formattedDate); 
+      },  
     });
 
     return () => {
@@ -66,27 +83,29 @@ function LogBook() {
     };
   }, []);
 
-  // Handle filter changes
+
   useEffect(() => {
     let filteredData = rowData;
 
-    if (selectedFilter.includes('all')) {
-      filteredData = rowData;
+    if (selectedFilter.length === 0) {
+      filteredData = filteredData.filter(visit => visit.status === 'Approved');
     } else {
-      if (selectedFilter.includes('checkedin')) {
-        filteredData = filteredData.filter(visit => visit.checkin_time);
-      }
-
-      if (selectedFilter.includes('checkedout')) {
-        filteredData = filteredData.filter(visit => visit.checkout_time);
-      }
-
-      if (selectedFilter.length === 0) {
+      if (selectedFilter.includes('all')) {
+        filteredData = rowData; 
+      } else {
+        if (selectedFilter.includes('checkedin')) {
+          filteredData = filteredData.filter(visit => visit.checkin_time); 
+        }
+        if (selectedFilter.includes('checkedout')) {
+          filteredData = filteredData.filter(visit => visit.checkout_time); 
+        }
+        
         filteredData = filteredData.filter(visit => visit.status === 'Approved');
       }
     }
+
 if (selectedDate) {
-    filteredData = filteredData.filter(visit => moment(visit.visit_date).format('YYYY-MM-DD') === selectedDate);  // Compare only date part
+    filteredData = filteredData.filter(visit => moment(visit.visit_date).format('YYYY-MM-DD') === selectedDate);  
   }
 
     setFilteredData(filteredData);
@@ -94,12 +113,10 @@ if (selectedDate) {
 
   const handleFilterChange = (event) => {
     const { value, checked } = event.target;
-    setSelectedFilter(prevState => {
-      const newFilter = checked ? [...prevState, value] : prevState.filter(f => f !== value);
-      return newFilter;
-    });
+  
+    setSelectedFilter(checked ? [value] : []);
   };
-
+  
 
   const handleSearch = (event) => {
     const searchTerm = event.target.value.toLowerCase();
@@ -111,87 +128,98 @@ if (selectedDate) {
     });
     setFilteredData(filteredData);
   };
-
-  // Action cell renderer component
+  
   const ActionCellRenderer = (props) => {
     const [isCheckin, setIsCheckin] = useState(!!props.data.checkin_time);
-    const [checkinTime, setCheckinTime] = useState(props.data.checkin_time || '');
+    const [checkinTime, setCheckinTime] = useState(props.data.checkin_time);
     const [isCheckout, setIsCheckout] = useState(!!props.data.checkout_time);
-    const [checkoutTime, setCheckoutTime] = useState(props.data.checkout_time || '');
+    const [checkoutTime, setCheckoutTime] = useState(props.data.checkout_time);
 
     const handleCheckin = async () => {
-      const time = moment().format();
-      setCheckinTime(time);
-      setIsCheckin(true);
-      try {
-        await axios.put(`http://localhost:5000/api/visits/checkin_time/${props.data.visit_id}`, { checkin_time: time });
-        toast.success("checkin successfully!");
-      } catch (error) {
-        toast.error("Error checkin!");
-        console.error('Error saving check-in time:', error);
-      }
+        const action = 'checkin';
+        try {
+            const response = await axios.put(`http://localhost:5000/api/visits/${props.data.visit_id}`, { action });
+            if (response.status === 200) {
+                const time = moment().format();
+                setCheckinTime(time);
+                setIsCheckin(true);
+                toast.success("Checked in successfully!");
+                props.onChange(props.data.visit_id, 'checkin', time);
+            }
+        } catch (error) {
+            toast.error("Error during check-in!");
+            console.error('Error saving check-in time:', error);
+        }
     };
 
     const handleCheckout = async () => {
-      if (!isCheckin) {
-        console.warn('Cannot check out before checking in.');
-        return;
-      }
-      const time = moment().format();
-      setCheckoutTime(time);
-      setIsCheckout(true);
-      try {
-        await axios.put(`http://localhost:5000/api/visits/checkout_time/${props.data.visit_id}`, { checkout_time: time });
-        toast.success("checkout successfully!");
-      } catch (error) {
-        toast.error("Error checkout!");
-        console.error('Error saving check-out time:', error);
-      }
+        if (!isCheckin) { 
+            console.warn('Cannot check out before checking in.');
+             toast.warn('Cannot check out before checking in.');
+            return;
+        }
+        const action = 'checkout';
+        try {
+            const response = await axios.put(`http://localhost:5000/api/visits/${props.data.visit_id}`, { action });
+            if (response.status === 200) {
+                const time = moment().format();
+                setCheckoutTime(time);
+                setIsCheckout(true);
+                toast.success("Checked out successfully!");
+                props.onChange(props.data.visit_id, 'checkout', time);
+            }
+        } catch (error) {
+            toast.error("Error during check-out!");
+            console.error('Error saving check-out time:', error);
+        }
     };
 
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
-        {props.colDef.field === 'checkin_time' && (
-          <>
-            {!isCheckin ? (
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={handleCheckin}
-                style={{ padding: '2px 6px', fontSize: '12px' }}
-              >
-                CHECK IN
-              </button>
-            ) : (
-              <span>{moment(checkinTime).format('hh:mm A')}</span>
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+            {props.colDef.field === 'checkin_time' && (
+                <>
+                    {!isCheckin ? (
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={handleCheckin}
+                            style={{ padding: '2px 6px', fontSize: '12px' }}
+                        >
+                            CHECK IN
+                        </button>
+                    ) : (
+                        <span>{moment(checkinTime).format('hh:mm A')}</span>
+                    )}
+                </>
             )}
-          </>
-        )}
-        {props.colDef.field === 'checkout_time' && (
-          <>
-            {!isCheckout ? (
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={handleCheckout}
-                style={{ padding: '2px 6px', fontSize: '12px' }}
-                disabled={!isCheckin}
-              >
-                CHECK OUT
-              </button>
-            ) : (
-              <span>{moment(checkoutTime).format('hh:mm A')}</span>
+            {props.colDef.field === 'checkout_time' && (
+                <>
+                    {!isCheckout ? (
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={handleCheckout}
+                            style={{ padding: '2px 6px', fontSize: '12px' }}
+                            disabled={!isCheckin}
+                        >
+                            CHECK OUT
+                        </button>
+                    ) : (
+                        <span>{moment(checkoutTime).format('hh:mm A')}</span>
+                    )}
+                </>
             )}
-          </>
-        )}
-      </div>
+        </div>
     );
-  };
+};
+
 
   const columnDefs = [
     { headerName: 'Visitor', field: 'visitor_name', valueGetter: (params) => `${params.data.visitor.first_name} ${params.data.visitor.last_name}` },
     { headerName: 'Host', field: 'host_name', valueGetter: (params) => `${params.data.host.first_name} ${params.data.host.last_name}` },
     { headerName: 'Confirmation ID', field: 'confirmation' },
-    { headerName: 'Check in', field: 'checkin_time', cellRenderer: ActionCellRenderer },
-    { headerName: 'Check out', field: 'checkout_time', cellRenderer: ActionCellRenderer },
+    { headerName: 'Check in', field: 'checkin_time', cellRenderer: (params) => (
+      <ActionCellRenderer {...params} onChange={handleDataChange} /> )},
+  { headerName: 'Check out', field: 'checkout_time', cellRenderer: (params) => (
+      <ActionCellRenderer {...params} onChange={handleDataChange} />)},
     { headerName: 'Duration', field: 'duration',  valueGetter: (params) => {
       const durationInMinutes = params.data.duration;
   
@@ -210,8 +238,18 @@ if (selectedDate) {
 
   return (
     <div className="container">
-      <h4 className="mb-0">LogBook</h4><br />
-
+        <div className="d-flex align-items-center justify-content-start">
+        <h4 className="mb-0">Logbook</h4>
+        <ol className="breadcrumb m-0 ms-3">
+          <li className="breadcrumb-item">
+            <Link to="/">Home</Link>
+          </li>
+          <li className="breadcrumb-item active">
+            Logbook
+          </li>
+        </ol>
+      </div>
+      <br/>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
           style={{ padding: '3px 7px', fontSize: '13px' }}>
@@ -259,9 +297,9 @@ if (selectedDate) {
               className="form-check-input"
               type="checkbox"
               name="filterOptions"
-              id="expected"
-              value="expected"
-              checked={selectedFilter.includes('expected')}
+              id="checkedin" 
+              value="checkedin" 
+              checked={selectedFilter.includes('checkedin')}
               onChange={handleFilterChange}
             />
             <label className="form-check-label" htmlFor="checkedin">
@@ -292,6 +330,8 @@ if (selectedDate) {
               pagination={true}
               paginationPageSize={10}
               paginationPageSizeSelector={true}
+              overlayNoRowsTemplate={`<span>${error ? error : 'No approved visits found'}</span>`}
+
             />
           </div>
         </div>
