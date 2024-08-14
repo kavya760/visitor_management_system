@@ -6,8 +6,6 @@ router.put('/:id', async (req, res) => {
     const { action } = req.body; 
     const currentTime = new Date();
 
-    console.log('Request Body:', req.body);
-
     const selectQuery = 'SELECT * FROM visits WHERE visit_id = ?';
     try {
         const [rows] = await req.db.query(selectQuery, [visit_id]);

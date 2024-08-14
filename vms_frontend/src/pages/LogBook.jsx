@@ -144,7 +144,7 @@ if (selectedDate) {
                 setCheckinTime(time);
                 setIsCheckin(true);
                 toast.success("Checked in successfully!");
-                props.onChange(props.data.visit_id, 'checkin', time);
+                props.on(props.data.visit_id, 'checkin', time);
             }
         } catch (error) {
             toast.error("Error during check-in!");
