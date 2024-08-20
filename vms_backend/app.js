@@ -5,9 +5,20 @@ const users = require('./routes/users');
 const invitations = require('./routes/invitations');
 const logBook = require('./routes/logBook');
 const moment = require('moment');
-
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
+app.use(express.json());
+app.use(cors(
+    {
+        origin: ["http://localhost:5173"],
+        methods: ["POST, GET"],
+        credentials: true
+    }
+))
+
 const db = mysql.createPool({
     host: "localhost",
     user: "root",
@@ -15,29 +26,37 @@ const db = mysql.createPool({
     database: "vms_management"
 });
 
-app.use(cors());
-app.use(express.json());
-
 app.use((req, res, next) => {
     req.db = db;
     next();
 });
 
-app.use('/api/users', (req, res, next) => {
-    req.db = db; 
-    next();
-}, users);
+app.use('/api/users', users);
+app.use('/api/visits', invitations);
+app.use('/api/visits', logBook);
 
-app.use('/api/visits', (req, res, next) => {
-    req.db = db; 
-    next();
-}, invitations);
+app.get('/login', async (req, res) => {
+    const { email, password } = req.body; 
+    const sql = "SELECT * FROM users WHERE email = ?";
 
-app.use('/api/visits', (req, res, next) => {
-    req.db = db; 
-    next();
-}, logBook);
+    db.query(sql, [email], async (err, data) => {
+        if (err) return res.status(500).json({ Message: "Server Side Error" });
 
+        if (data.length > 0) {
+            const user = data[0];
+            const validPassword = await bcrypt.compare(password, user.password);
+            if (validPassword) {
+                const token = jwt.sign({ email: user.email }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
+                res.cookie('token', token);
+                return res.json({ Status: "Success" });
+            } else {
+                return res.json({ Message: "Invalid Email or Password" });
+            }
+        } else {
+            return res.json({ Message: "No Records Existed" });
+        }
+    });
+});
 
 app.get('/api/locations', async (req, res) => {
     try {
@@ -131,8 +150,7 @@ app.get('/api/visits', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch visits" });
     }
 });
-
-
+ 
 app.listen(5000, (error) => {
     if (error) {
         console.error("Error starting server:", error);

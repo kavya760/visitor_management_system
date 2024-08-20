@@ -14,6 +14,7 @@ import DashBoard from './pages/DashBoard';
 import LogBook from './pages/LogBook';
 import SideNav from './components/SideNav';
 import User from './pages/User';
+import Login from './Login';
 
 
 
@@ -47,6 +48,7 @@ function App() {
             <Route path="/invitations" element={<Invitations />} />
             <Route path="/dashboard" element={<DashBoard />} />
             <Route path="/logbook" element={<LogBook />} />
+            <Route path="/login" element={<Login/>} />
             <Route path="/user" element={<User />} />
           </Routes>
         </div>
