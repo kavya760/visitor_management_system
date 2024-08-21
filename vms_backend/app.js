@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const session = require('express-session'); // Import express-session
 const users = require('./routes/users');
 const invitations = require('./routes/invitations');
 const logBook = require('./routes/logBook');
@@ -11,13 +12,20 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
-app.use(cors(
-    {
-        origin: ["http://localhost:5173"],
-        methods: ["POST, GET"],
-        credentials: true
-    }
-))
+app.use(cookieParser());
+
+app.use(session({
+    secret: 'your-secret-key', 
+    resave: false,             
+    saveUninitialized: false,  
+    cookie: { secure: true }  
+}));
+
+app.use(cors({
+    origin: ["http://localhost:5173"],
+    methods: ["POST, GET"],
+    credentials: true
+}));
 
 const db = mysql.createPool({
     host: "localhost",
@@ -35,32 +43,49 @@ app.use('/api/users', users);
 app.use('/api/visits', invitations);
 app.use('/api/visits', logBook);
 
-app.get('/login', async (req, res) => {
-    const { email, password } = req.body; 
-    const sql = "SELECT * FROM users WHERE email = ?";
+async function getUserByEmail(email) {
+    try {
+        const [results] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        return results.length > 0 ? results[0] : null;
+    } catch (err) {
+        throw new Error('Database query failed');
+    }
+}
 
-    db.query(sql, [email], async (err, data) => {
-        if (err) return res.status(500).json({ Message: "Server Side Error" });
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
 
-        if (data.length > 0) {
-            const user = data[0];
-            const validPassword = await bcrypt.compare(password, user.password);
-            if (validPassword) {
-                const token = jwt.sign({ email: user.email }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
-                res.cookie('token', token);
-                return res.json({ Status: "Success" });
-            } else {
-                return res.json({ Message: "Invalid Email or Password" });
-            }
-        } else {
-            return res.json({ Message: "No Records Existed" });
+    try {
+        const user = await getUserByEmail(email);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
-    });
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (isMatch) {
+            req.session.user = { email: user.email }; 
+            const token = jwt.sign({ email: user.email }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
+            res.cookie('token', token);
+            res.status(200).json({
+                status: "Success",
+                message: 'Login successful',
+                user: {
+                    id: user.user_id,
+                    roleId: user.role_id,
+                    email: user.email
+                }
+            });
+        } else {
+            res.status(401).json({ status: "Error", Message: 'Invalid credentials' });
+        }
+    } catch (error) {
+        console.error('Error processing login:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 });
 
 app.get('/api/locations', async (req, res) => {
     try {
-        
         const [results] = await req.db.query('SELECT * FROM locations');
         res.json(results);
     } catch (err) {
@@ -71,7 +96,6 @@ app.get('/api/locations', async (req, res) => {
 
 app.get('/api/visittypes', async (req, res) => {
     try {
-       
         const [results] = await req.db.query('SELECT * FROM visittypes');
         res.json(results);
     } catch (err) {
@@ -122,9 +146,8 @@ app.get('/api/visits', async (req, res) => {
     try {
         const [results] = await req.db.query(query);
         const transformedResults = results.map(row => ({
-          
             visit_date: moment(row.visit_date).format('YYYY-MM-DD'),
-            visit_time:moment(row.visit_time, 'HH:mm:ss').format('h:mm:ss A'),
+            visit_time: moment(row.visit_time, 'HH:mm:ss').format('h:mm:ss A'),
             purpose: row.purpose,
             status: row.status,
             visit_id: row.visit_id,

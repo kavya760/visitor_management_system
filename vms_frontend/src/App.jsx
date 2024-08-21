@@ -44,11 +44,11 @@ function App() {
     
         <div className="content-wrapper">
           <Routes>
+            <Route path="/login" element={<Login/>} />
             <Route path="/" element={<WelCome />} />
             <Route path="/invitations" element={<Invitations />} />
             <Route path="/dashboard" element={<DashBoard />} />
             <Route path="/logbook" element={<LogBook />} />
-            <Route path="/login" element={<Login/>} />
             <Route path="/user" element={<User />} />
           </Routes>
         </div>
