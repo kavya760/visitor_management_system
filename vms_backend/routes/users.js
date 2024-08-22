@@ -35,7 +35,7 @@ router.post('/create', async (req, res) => {
 
             const [createUserResults] = await db.query(
                 'INSERT INTO users (first_name, last_name, email, phone_number, password, role_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [first_name, last_name, email, phone_number, hashedPassword, userRole ? userRole.role_id : null]
+                [first_name, last_name, email, phone_number, hashedPassword, userRole ?. userRole.role_id]
             );
 
             const [newUserResults] = await db.query('SELECT * FROM users WHERE user_id = ?', [createUserResults.insertId]);
@@ -75,10 +75,6 @@ router.post('/create', async (req, res) => {
         res.status(500).json({ error: "Failed to create visit", details: error.message });
     }
 });
-
-
-
-
 
 // Delete user
 router.delete('/delete/:id', (req, res) => {

@@ -61,7 +61,6 @@ function SchedulevisitForm({onChange}) {
       console.log("Form Data being sent:", formData);
       await axios.post('http://localhost:5000/api/users/create', dataToSend);
       toast.success("Schedule visit created successfully!");
-      onChange();
       resetForm();
     } catch (error) {
       toast.error("Error creating schedule visit!");
@@ -69,18 +68,6 @@ function SchedulevisitForm({onChange}) {
     }
   };
 
-  // const handleUpdate = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await axios.put(`http://localhost:5000/api/users/update/${selectedUserId}`, formData);
-  //     toast.success("Schedule visit updated successfully!");
-  //     onChange();
-  //     resetForm();
-  //   } catch (error) {
-  //     toast.error("Error updating Schedule visit!");
-  //     console.error('Error updating Schedule visit:', error);
-  //   }
-  // };
 
   const resetForm = () => {
     setFormData({

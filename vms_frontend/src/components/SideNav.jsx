@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // SidebarLink Component
 const SidebarLink = ({ to, icon, label }) => (
@@ -32,7 +32,12 @@ const Sidebar = () => (
 
 // NavBar Component
 const NavBar = () => {
-
+  const navigate = useNavigate(); 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); 
+    sessionStorage.removeItem('user');
+    navigate('/login'); 
+  };
 
   return (
     <>
@@ -47,7 +52,9 @@ const NavBar = () => {
         </ul>
         <ul className="navbar-nav d-flex align-items-center ms-auto">
           <li className="nav-item">
-            <i className="bi bi-box-arrow-right me-3 fs-4"></i>
+          <button onClick={handleLogout} className="btn btn-link nav-link">
+                <i className="bi bi-box-arrow-right me-3 fs-4"></i> 
+              </button>
           </li>
         </ul>
       </div>

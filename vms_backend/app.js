@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
-const session = require('express-session'); // Import express-session
+const session = require('express-session'); 
 const users = require('./routes/users');
 const invitations = require('./routes/invitations');
 const logBook = require('./routes/logBook');
@@ -45,37 +45,49 @@ app.use('/api/visits', logBook);
 
 async function getUserByEmail(email) {
     try {
-        const [results] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const [results] = await db.query(`
+            SELECT u.*, r.role_name
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.role_id
+            WHERE u.email = ?`, [email]);
         return results.length > 0 ? results[0] : null;
     } catch (err) {
         throw new Error('Database query failed');
     }
 }
 
+
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
+    console.log('Received login request:', email);
     try {
         const user = await getUserByEmail(email);
+        console.log('sssssss',user)
         if (!user) {
+            console.log('User not found for email:', email);
             return res.status(404).json({ message: 'User not found' });
         }
         
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Password match status for email:', email, isMatch);
+
         if (isMatch) {
-            req.session.user = { email: user.email }; 
-            const token = jwt.sign({ email: user.email }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
+    
+
+            const token = jwt.sign({ first_name:user.first_name,role_name:user.role_name, email: user.email }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
             res.cookie('token', token);
             res.status(200).json({
                 status: "Success",
                 message: 'Login successful',
-                user: {
-                    id: user.user_id,
-                    roleId: user.role_id,
-                    email: user.email
-                }
+                // user: {
+                //     id: user.user_id,
+                //     roleId: user.role_id,
+                //     email: user.email
+                // },
+                token:token
             });
         } else {
+            console.log('Invalid credentials for email:', email);
             res.status(401).json({ status: "Error", Message: 'Invalid credentials' });
         }
     } catch (error) {

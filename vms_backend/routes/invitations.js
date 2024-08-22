@@ -37,4 +37,24 @@ router.put('/update/:id', async (req, res) => {
     }
 });
 
+router.get('/visits', async (req, res) => {
+    const { role_id, email } = req.user;
+
+    let query = 'SELECT * FROM visits';
+    const queryParams = [];
+
+    if (role_id === 2) { 
+        query += ' WHERE assigned_staff_email = ?';
+        queryParams.push(email);
+    }
+
+    try {
+        const [rows] = await req.db.query(query, queryParams);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching visits:', error);
+        res.status(500).json({ error: 'Failed to fetch visits' });
+    }
+});
+
 module.exports = router;

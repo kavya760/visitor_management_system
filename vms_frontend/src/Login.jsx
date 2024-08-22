@@ -23,13 +23,13 @@ export default function Login() {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/login', values);
-            console.log("Response from server:", response.data);
-
             if (response.data.status === "Success") {
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                console.log('Login successful:', response.data);
+                localStorage.setItem('token', response.data.token);
                 toast.success("Login successful!");
                 navigate('/');
             } else {
+                console.log('Login failed:', response.data.message);
                 toast.error(response.data.message);  
             }
         } catch (error) {
