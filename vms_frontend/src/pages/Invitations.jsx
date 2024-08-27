@@ -7,6 +7,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useLocation } from 'react-router-dom';
+import api from '../api';
+import { jwtDecode } from 'jwt-decode'
 
 function Invitations() {
   const [visits, setVisits] = useState([]);
@@ -15,33 +17,40 @@ function Invitations() {
 
 
   useEffect(() => {
-  
     fetchVisits();
   }, []);
 
-  const fetchVisits = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/visits'); 
-      setVisits(response.data);
+    const fetchVisits = async () => {
+      try {
+        const token = localStorage.getItem('token'); 
+        if (!token) {
+          console.error('No token found');
+          setVisits([]);
+          return;
+        }
     
-    } catch (error) {
-      console.error('Error fetching visits:', error);
-      setError('Failed to fetch visits');
-    }
-  };
-  console.log("visit:",visits);
-
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.user_id; 
+        const response = await api.get('/api/visits');
+        if (userId) {
+          const filteredVisits = response.data.filter(visit => visit.host.user_id === userId);
+          setVisits(filteredVisits);
+        } else {
+          setVisits([]);
+        }
+      } catch (error) {
+        setError('Failed to fetch visits');
+      }
+    };
+ 
   const updateVisitStatus = async (id, status) => {
     try {
-        console.log(`Updating visit with ID ${id} and status ${status}`);
         const response = await axios.put(`http://localhost:5000/api/visits/update/${id}`, { status }, {
             headers: {
                 'Content-Type': 'application/json'
             }
         });
-        console.log("status:", status);
         const newStatus = status === 'approved' ? 'Approved' : 'Rejected';
-        console.log("newstatus:", newStatus);
 
         if (response.data.message === 'Status updated successfully') {
             const updatedRowData = visits.map(row => {

@@ -11,6 +11,7 @@ import moment from 'moment';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useLocation } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode'
 
 function LogBook() {
   const [rowData, setRowData] = useState([]);
@@ -25,6 +26,15 @@ function LogBook() {
   useEffect(() => {
     const fetchVisits = async () => {
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found');
+          setRowData([]);
+          return;
+        }
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.user_id;
+
         const response = await axios.get('http://localhost:5000/api/visits');
         const visits = response.data;
 
@@ -41,7 +51,7 @@ function LogBook() {
           return { ...visit, duration };
         });
 
-        const filteredData = processedData.filter(visit => visit.status === 'Approved');
+        const filteredData = processedData.filter(visit => visit.host.user_id === userId && visit.status === 'Approved');
         setRowData(filteredData);
       } catch (error) {
         console.error('Error fetching visits:', error);

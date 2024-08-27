@@ -30,12 +30,13 @@ router.post('/create', async (req, res) => {
             // Create new user if not exists
             const [roleResults] = await db.query('SELECT * FROM roles WHERE role_name = ?', ['user']);
             const userRole = roleResults[0];
+            const roleId = userRole ?. userRole.role_id;
             const defaultPassword = "password";
             const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
 
             const [createUserResults] = await db.query(
                 'INSERT INTO users (first_name, last_name, email, phone_number, password, role_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [first_name, last_name, email, phone_number, hashedPassword, userRole ?. userRole.role_id]
+                [first_name, last_name, email, phone_number, hashedPassword, roleId]
             );
 
             const [newUserResults] = await db.query('SELECT * FROM users WHERE user_id = ?', [createUserResults.insertId]);

@@ -64,7 +64,6 @@ function SchedulevisitForm({onChange}) {
       resetForm();
     } catch (error) {
       toast.error("Error creating schedule visit!");
-      console.error('Error creating user:', error);
     }
   };
 

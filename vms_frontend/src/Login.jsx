@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import api from './api';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -22,14 +23,14 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/login', values);
+            const response = await api.post('/login', values);
             if (response.data.status === "Success") {
-                console.log('Login successful:', response.data);
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('first_name', response.data.first_name);
                 toast.success("Login successful!");
                 navigate('/');
+                window.location.reload();
             } else {
-                console.log('Login failed:', response.data.message);
                 toast.error(response.data.message);  
             }
         } catch (error) {
@@ -41,7 +42,7 @@ export default function Login() {
     return (
         <div className='d-flex justify-content-center align-items-center'>
             <div className='p-3 rounded w-50'>
-                <h4>Sign In</h4>
+                <h4 className='text-center'>Sign In</h4>
                 <form onSubmit={handleSubmit}>
                     <div className='mb-3'>
                         <label htmlFor='email'>Email</label>

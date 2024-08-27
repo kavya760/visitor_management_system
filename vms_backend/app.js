@@ -22,10 +22,9 @@ app.use(session({
 }));
 
 app.use(cors({
-    origin: ["http://localhost:5173"],
-    methods: ["POST, GET"],
-    credentials: true
-}));
+    origin: 'http://localhost:5173', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  }));
 
 const db = mysql.createPool({
     host: "localhost",
@@ -59,35 +58,23 @@ async function getUserByEmail(email) {
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    console.log('Received login request:', email);
     try {
         const user = await getUserByEmail(email);
-        console.log('sssssss',user)
         if (!user) {
-            console.log('User not found for email:', email);
             return res.status(404).json({ message: 'User not found' });
         }
         
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('Password match status for email:', email, isMatch);
 
         if (isMatch) {
-    
-
-            const token = jwt.sign({ first_name:user.first_name,role_name:user.role_name, email: user.email }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
-            res.cookie('token', token);
+            const token = jwt.sign({ first_name:user.first_name, role_name:user.role_name, email: user.email, user_id:user.user_id }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
             res.status(200).json({
                 status: "Success",
                 message: 'Login successful',
-                // user: {
-                //     id: user.user_id,
-                //     roleId: user.role_id,
-                //     email: user.email
-                // },
-                token:token
+                token:token,
+                first_name: user.first_name,
             });
         } else {
-            console.log('Invalid credentials for email:', email);
             res.status(401).json({ status: "Error", Message: 'Invalid credentials' });
         }
     } catch (error) {
@@ -185,7 +172,10 @@ app.get('/api/visits', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch visits" });
     }
 });
- 
+
+
+
+
 app.listen(5000, (error) => {
     if (error) {
         console.error("Error starting server:", error);

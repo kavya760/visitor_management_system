@@ -4,7 +4,6 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
-  console.log("Row Data:", rowData);
   
   const ActionCellRenderer = (props) => {
     const { data } = props;

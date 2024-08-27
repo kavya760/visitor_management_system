@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-
 import 'admin-lte/dist/css/adminlte.min.css'; 
 import 'jquery'; 
 import 'admin-lte/dist/js/adminlte.min'; 
@@ -17,45 +16,67 @@ import User from './pages/User';
 import Login from './Login';
 
 
-
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token'); 
+    setIsAuthenticated(token !== null);
+  }, []);
 
   useEffect(() => {
     if (window.AdminLTE) {
       window.AdminLTE.init(); 
     }
   }, []);
+
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>; 
+  }
+
   return (
     <BrowserRouter>
-      <div className="wrapper">
-        <SideNav />
-        <ToastContainer 
-        position="bottom-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        />
-    
-        <div className="content-wrapper">
-          <Routes>
-            <Route path="/login" element={<Login/>} />
-            <Route path="/" element={<WelCome />} />
-            <Route path="/invitations" element={<Invitations />} />
-            <Route path="/dashboard" element={<DashBoard />} />
-            <Route path="/logbook" element={<LogBook />} />
-            <Route path="/user" element={<User />} />
-          </Routes>
-        </div>
-      </div>
-     
+      <Routes>
+        {!isAuthenticated ? (
+          <>
+            <Route path="/login" element={
+              <div style={{ backgroundColor: 'white' }}>
+                <Login />
+              </div>
+            } />
+          </>
+        ) : (
+          <Route path="*" element={
+            <div className="wrapper">
+              <SideNav />
+              <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
+              <div className="content-wrapper">
+                <Routes>
+                  <Route path="/" element={<WelCome />} />
+                  <Route path="/invitations" element={<Invitations />} />
+                  <Route path="/dashboard" element={<DashBoard />} />
+                  <Route path="/logbook" element={<LogBook />} />
+                  <Route path="/user" element={<User />} />
+                </Routes>
+              </div>
+            </div>
+          } />
+        )}
+      </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 // SidebarLink Component
@@ -32,10 +32,21 @@ const Sidebar = () => (
 
 // NavBar Component
 const NavBar = () => {
+  const [user, setUser] = useState({});
   const navigate = useNavigate(); 
+
+  useEffect(() => {
+    const firstName = localStorage.getItem('first_name');
+    if (firstName) {
+        setUser({ first_name: firstName });
+    }
+  }, []);
+
+  
   const handleLogout = () => {
     localStorage.removeItem('token'); 
-    sessionStorage.removeItem('user');
+    localStorage.removeItem('first_name');
+    setUser({});
     navigate('/login'); 
   };
 
@@ -51,6 +62,11 @@ const NavBar = () => {
           </li>
         </ul>
         <ul className="navbar-nav d-flex align-items-center ms-auto">
+            {user.first_name ? (
+              <li className="nav-item me-3">
+                  <span className="navbar-text">Hi, {user.first_name}</span>
+              </li>
+          ) : null}
           <li className="nav-item">
           <button onClick={handleLogout} className="btn btn-link nav-link">
                 <i className="bi bi-box-arrow-right me-3 fs-4"></i> 
