@@ -14,9 +14,9 @@ const SidebarLink = ({ to, icon, label }) => (
 // Sidebar Component
 const Sidebar = () => (
   <aside className="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="/" className="brand-link">
-      <span className="brand-text font-weight-light">Admin</span>
-    </a>
+      <div className="brand-link">
+  <span className="brand-text font-weight-light">Velankani</span>
+</div>
     <div className="sidebar">
       <nav className="mt-2">
       <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -40,45 +40,64 @@ const NavBar = () => {
     if (firstName) {
         setUser({ first_name: firstName });
     }
+
+    const initializeTooltips = async () => {
+      if (window.bootstrap) {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map((tooltipTriggerEl) => {
+          return new window.bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      } else {
+
+        console.error("Bootstrap JavaScript not loaded.");
+      }
+    };
+    initializeTooltips();
   }, []);
 
-  
   const handleLogout = () => {
     localStorage.removeItem('token'); 
     localStorage.removeItem('first_name');
-    setUser({});
     navigate('/login'); 
+    setUser({});
+    window.location.reload();
   };
 
   return (
-    <>
-     <nav className="main-header navbar navbar-expand navbar-light navbar-white">
+    <nav className="main-header navbar navbar-expand navbar-light navbar-white">
       <div className="container-fluid d-flex justify-content-between align-items-center">
         <ul className="navbar-nav d-flex align-items-center">
           <li className="nav-item">
-            <a className="nav-link sidebar-toggle-btn" data-widget="pushmenu" data-auto-collapse-size="768" href="#" role="button">
+            <a
+              className="nav-link sidebar-toggle-btn"
+              data-widget="pushmenu"
+              data-auto-collapse-size="768"
+              href="#"
+              role="button"
+            >
               <i className="bi bi-list" style={{ fontSize: '1.3rem', color: 'black' }}></i>
             </a>
           </li>
         </ul>
-        <ul className="navbar-nav d-flex align-items-center ms-auto">
-            {user.first_name ? (
-              <li className="nav-item me-3">
-                  <span className="navbar-text">Hi, {user.first_name}</span>
-              </li>
+        <div className="d-flex align-items-center ms-auto">
+          {user.first_name ? (
+            <span className="navbar-text me-3">Hi, {user.first_name}</span>
           ) : null}
-          <li className="nav-item">
-          <button onClick={handleLogout} className="btn btn-link nav-link">
-                <i className="bi bi-box-arrow-right me-3 fs-4"></i> 
-              </button>
-          </li>
-        </ul>
+          <button
+            onClick={handleLogout}
+            className="btn btn-link"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            title="Logout"
+          >
+            <i className="bi bi-box-arrow-right fs-4 " style={{ fontSize: '1.3rem', color: 'black' }}></i>
+          </button>
+        </div>
       </div>
     </nav>
-   
-  </>
   );
 };
+
 
 // SideNav Component
 const SideNav = () => (

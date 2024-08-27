@@ -28,7 +28,7 @@ export default function Login() {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('first_name', response.data.first_name);
                 toast.success("Login successful!");
-                navigate('/');
+                navigate('/invitations');
                 window.location.reload();
             } else {
                 toast.error(response.data.message);  
@@ -41,7 +41,7 @@ export default function Login() {
 
     return (
         <div className='d-flex justify-content-center align-items-center'>
-            <div className='p-3 rounded w-50'>
+            <div className='p-3 rounded w-50' >
                 <h4 className='text-center'>Sign In</h4>
                 <form onSubmit={handleSubmit}>
                     <div className='mb-3'>

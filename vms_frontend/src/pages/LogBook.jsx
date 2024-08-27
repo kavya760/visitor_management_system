@@ -34,6 +34,7 @@ function LogBook() {
         }
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.user_id;
+        const isAdmin = decodedToken.role_name === 'admin'; 
 
         const response = await axios.get('http://localhost:5000/api/visits');
         const visits = response.data;
@@ -51,11 +52,21 @@ function LogBook() {
           return { ...visit, duration };
         });
 
-        const filteredData = processedData.filter(visit => visit.host.user_id === userId && visit.status === 'Approved');
+        let filteredData;
+
+        if (isAdmin) {
+          filteredData = processedData;
+        } else {
+          filteredData = processedData.filter(
+            visit => visit.host.user_id === userId && visit.status === 'Approved'
+          );
+        }
+
         setRowData(filteredData);
+        setFilteredData(filteredData);
       } catch (error) {
         console.error('Error fetching visits:', error);
-        setError(error.message);
+        setError('Failed to fetch visits.');
       }
     };
 

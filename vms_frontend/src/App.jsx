@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'admin-lte/dist/css/adminlte.min.css'; 
@@ -14,6 +14,7 @@ import LogBook from './pages/LogBook';
 import SideNav from './components/SideNav';
 import User from './pages/User';
 import Login from './Login';
+import MailStatus from './components/MailStatus';
 
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('token'); 
-    setIsAuthenticated(token !== null);
+    setIsAuthenticated(!!token);
   }, []);
 
   useEffect(() => {
@@ -73,7 +74,8 @@ function App() {
             </div>
           } />
         )}
-      </Routes>
+            <Route path="*" element={<Navigate to="/login" />} />
+            </Routes>
     </BrowserRouter>
   );
 }

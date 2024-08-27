@@ -71,3 +71,20 @@
 .input-group {
   margin-left: 0.5rem;
 }
+
+/* Styles for the sidebar container */
+.side-nav-container {
+  display: flex;
+  position: relative;
+}
+
+/* Sidebar styles */
+.main-sidebar {
+  transition: width 0.3s ease;
+}
+
+
+
+
+
+

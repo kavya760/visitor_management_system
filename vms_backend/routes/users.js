@@ -30,7 +30,7 @@ router.post('/create', async (req, res) => {
             // Create new user if not exists
             const [roleResults] = await db.query('SELECT * FROM roles WHERE role_name = ?', ['user']);
             const userRole = roleResults[0];
-            const roleId = userRole ?. userRole.role_id;
+            const roleId = userRole ? userRole.role_id : null;
             const defaultPassword = "password";
             const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
 

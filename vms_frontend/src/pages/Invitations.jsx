@@ -17,31 +17,38 @@ function Invitations() {
 
 
   useEffect(() => {
-    fetchVisits();
-  }, []);
+ 
 
-    const fetchVisits = async () => {
-      try {
-        const token = localStorage.getItem('token'); 
-        if (!token) {
-          console.error('No token found');
-          setVisits([]);
-          return;
-        }
-    
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.user_id; 
-        const response = await api.get('/api/visits');
-        if (userId) {
-          const filteredVisits = response.data.filter(visit => visit.host.user_id === userId);
-          setVisits(filteredVisits);
-        } else {
-          setVisits([]);
-        }
-      } catch (error) {
-        setError('Failed to fetch visits');
+  const fetchVisits = async () => {
+    try {
+      const token = localStorage.getItem('token'); 
+      if (!token) {
+        console.error('No token found');
+        setVisits([]);
+        return;
       }
-    };
+
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.user_id; 
+      const isAdmin = decodedToken.role_name === 'admin'; 
+
+      const response = await api.get('/api/visits');
+      if (isAdmin) {
+        setVisits(response.data);
+      } else if (userId) {
+        const filteredVisits = response.data.filter(visit => visit.host.user_id === userId);
+        setVisits(filteredVisits);
+      } else {
+        setVisits([]);
+      }
+    } catch (error) {
+      setError('Failed to fetch visits');
+      console.error(error); 
+    }
+  };
+  fetchVisits();
+}, []);
+
  
   const updateVisitStatus = async (id, status) => {
     try {
