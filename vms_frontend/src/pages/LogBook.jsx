@@ -236,7 +236,6 @@ if (selectedDate) {
   const columnDefs = [
     { headerName: 'Visitor', field: 'visitor_name', valueGetter: (params) => `${params.data.visitor.first_name} ${params.data.visitor.last_name}` },
     { headerName: 'Host', field: 'host_name', valueGetter: (params) => `${params.data.host.first_name} ${params.data.host.last_name}` },
-    { headerName: 'Confirmation ID', field: 'confirmation' },
     { headerName: 'Check in', field: 'checkin_time', cellRenderer: (params) => (
       <ActionCellRenderer {...params} onChange={handleDataChange} /> )},
   { headerName: 'Check out', field: 'checkout_time', cellRenderer: (params) => (
@@ -350,7 +349,7 @@ if (selectedDate) {
               rowSelection="multiple"
               pagination={true}
               paginationPageSize={10}
-              paginationPageSizeSelector={true}
+              paginationPageSizeSelector={false}
               overlayNoRowsTemplate={`<span>${error ? error : 'No approved visits found'}</span>`}
 
             />

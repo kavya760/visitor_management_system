@@ -14,7 +14,6 @@ import LogBook from './pages/LogBook';
 import SideNav from './components/SideNav';
 import User from './pages/User';
 import Login from './Login';
-import MailStatus from './components/MailStatus';
 
 
 function App() {

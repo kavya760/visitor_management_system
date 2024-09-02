@@ -2,28 +2,54 @@ import React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import axios from 'axios';
+
+const sendEmail = async (visitId, status) => {
+  try {
+    const response = await axios.post('http://localhost:5000/sendemail', { visitId, status });
+    console.log(`Email sent for visit ${visitId} with status ${status}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
 
 const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
   
   const ActionCellRenderer = (props) => {
     const { data } = props;
 
-    const handleApprove = () => {
-      updateVisitStatus(data.visit_id, 'approved');
+    const handleApprove = async () => {
+      try {
+        await updateVisitStatus(data.visit_id, 'approved');
+        await sendEmail(data.visit_id, 'approved');
+      } catch (error) {
+        console.error('Error handling approval:', error);
+      }
     };
 
-    const handleReject = () => {
-      updateVisitStatus(data.visit_id, 'rejected');
+    const handleReject = async () => {
+      try {
+        await updateVisitStatus(data.visit_id, 'rejected');
+        await sendEmail(data.visit_id, 'rejected');
+      } catch (error) {
+        console.error('Error handling rejection:', error);
+      }
     };
 
     const isApproved = data.status === 'Approved';
     const isRejected = data.status === 'Rejected';
+
+    const disabledButtonStyle = {
+      cursor: 'not-allowed',
+      opacity: 0.2
+    };
 
     return (
       <div className="action-buttons">
         <button
           onClick={handleApprove}
           className="btn btn-success btn-sm me-2"
+          style={isApproved ? disabledButtonStyle : {}}
           disabled={isApproved}
         >
           Approve
@@ -31,6 +57,7 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
         <button
           onClick={handleReject}
           className="btn btn-danger btn-sm"
+          style={isRejected ? disabledButtonStyle : {}}
           disabled={isRejected}
         >
           Reject
@@ -74,7 +101,7 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
         rowSelection="multiple"
         pagination={true}
         paginationPageSize={10}
-        paginationPageSizeSelector={true}
+        paginationPageSizeSelector={false}
       />
     </div>
   );

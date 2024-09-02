@@ -5,14 +5,17 @@ const session = require('express-session');
 const users = require('./routes/users');
 const invitations = require('./routes/invitations');
 const logBook = require('./routes/logBook');
+const dashboard = require('./routes/dashboard');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
+const sendEmail = require('./sendMail');
 
 const app = express();
 app.use(express.json());
-app.use(cookieParser());
+app.use(bodyParser.json());
 
 app.use(session({
     secret: 'your-secret-key', 
@@ -24,6 +27,7 @@ app.use(session({
 app.use(cors({
     origin: 'http://localhost:5173', 
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    credentials:true
   }));
 
 const db = mysql.createPool({
@@ -33,6 +37,7 @@ const db = mysql.createPool({
     database: "vms_management"
 });
 
+
 app.use((req, res, next) => {
     req.db = db;
     next();
@@ -41,6 +46,7 @@ app.use((req, res, next) => {
 app.use('/api/users', users);
 app.use('/api/visits', invitations);
 app.use('/api/visits', logBook);
+app.use( dashboard);
 
 async function getUserByEmail(email) {
     try {
@@ -57,6 +63,7 @@ async function getUserByEmail(email) {
 
 
 app.post('/login', async (req, res) => {
+    console.log('sasasas')
     const { email, password } = req.body;
     try {
         const user = await getUserByEmail(email);
@@ -73,6 +80,7 @@ app.post('/login', async (req, res) => {
                 message: 'Login successful',
                 token:token,
                 first_name: user.first_name,
+                role_name: user.role_name
             });
         } else {
             res.status(401).json({ status: "Error", Message: 'Invalid credentials' });
@@ -82,6 +90,19 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
+
+app.post('/sendemail', async (req, res) => {
+    const { to, subject, htmlContent } = req.body;
+
+    try {
+        await sendEmail(to, subject, htmlContent);
+        res.status(200).json({ message: 'Email sent successfully' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ error: 'Failed to send email' });
+    }
+});
+
 
 app.get('/api/locations', async (req, res) => {
     try {
@@ -126,9 +147,11 @@ app.get('/api/visits', async (req, res) => {
             u1.user_id AS visitor_id, 
             u1.first_name AS visitor_first_name, 
             u1.last_name AS visitor_last_name, 
+            u1.email AS visitor_email,
             h1.user_id AS host_id, 
             h1.first_name AS host_first_name, 
             h1.last_name AS host_last_name, 
+            h1.email AS host_email,
             l.location_name, 
             vt.visit_type
         FROM 
@@ -156,11 +179,13 @@ app.get('/api/visits', async (req, res) => {
             checkout_time: row.checkout_time,
             visitor: {
                 user_id: row.visitor_id,
+                email: row.visitor_email,
                 first_name: row.visitor_first_name,
                 last_name: row.visitor_last_name,
             },
             host: {
                 user_id: row.host_id,
+                email: row.host_email,
                 first_name: row.host_first_name,
                 last_name: row.host_last_name,
             }

@@ -17,8 +17,6 @@ function Invitations() {
 
 
   useEffect(() => {
- 
-
   const fetchVisits = async () => {
     try {
       const token = localStorage.getItem('token'); 
@@ -33,6 +31,7 @@ function Invitations() {
       const isAdmin = decodedToken.role_name === 'admin'; 
 
       const response = await api.get('/api/visits');
+      console.log("visits",response.data);
       if (isAdmin) {
         setVisits(response.data);
       } else if (userId) {
@@ -46,6 +45,7 @@ function Invitations() {
       console.error(error); 
     }
   };
+  
   fetchVisits();
 }, []);
 
@@ -57,18 +57,16 @@ function Invitations() {
                 'Content-Type': 'application/json'
             }
         });
+        console.log('Server response:', response);
         const newStatus = status === 'approved' ? 'Approved' : 'Rejected';
-
-        if (response.data.message === 'Status updated successfully') {
-            const updatedRowData = visits.map(row => {
-                if (row.visit_id === id) {
-                    return { ...row, status: status === 'approved' ? 'Approved' : 'Rejected' };
-                }
-                return row;
-            });
-            setVisits(updatedRowData); 
-            toast.success(`Visit ${status} successfully!`);
-        }
+        const updatedRowData = visits.map(row => {
+            if (row.visit_id === id) {
+              return { ...row, status: newStatus };
+            }
+            return row;
+        });
+        setVisits(updatedRowData); 
+        toast.success(`Visit ${status} successfully!`);
     } catch (error) {
         toast.error(`Error updating visit status: ${error.message}`);
         console.error(`Error updating visit status:`, error);
