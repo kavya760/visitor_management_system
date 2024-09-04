@@ -41,7 +41,6 @@ router.put('/update/:id', async (req, res) => {
         res.json({ message: 'Status updated successfully. Email will be sent shortly.' });
         const emailBody = generateEmailBody(visit_serialized);
         console.log('Email Subject:', emailSubject);
-        // console.log('Email Body:', emailBody);
 
         try {
             await sendEmail("kavyargowda223@gmail.com", emailSubject, emailBody);

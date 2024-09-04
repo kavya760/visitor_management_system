@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'admin-lte/dist/css/adminlte.min.css'; 
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'jquery'; 
 import 'admin-lte/dist/js/adminlte.min'; 
 import { ToastContainer } from 'react-toastify';
@@ -18,6 +19,12 @@ import Login from './Login';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [firstName, setFirstName] = useState('');
+
+  const handleLoginSuccess = (userInfo) => {
+    setFirstName(userInfo.first_name);
+    setIsAuthenticated(true);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token'); 
@@ -36,45 +43,55 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Routes>
         {!isAuthenticated ? (
           <>
             <Route path="/login" element={
-              <div style={{ backgroundColor: 'white' }}>
-                <Login />
+              <div style={{ backgroundColor: 'white', height: '100vh' }}>
+                <Login onLoginSuccess={handleLoginSuccess} />
               </div>
             } />
+            <Route path="*" element={<Navigate to="/login" />} />
+            <Route path="/" element={<WelCome />} />
+
           </>
         ) : (
-          <Route path="*" element={
-            <div className="wrapper">
-              <SideNav />
-              <ToastContainer
-                position="bottom-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-              />
-              <div className="content-wrapper">
-                <Routes>
-                  <Route path="/" element={<WelCome />} />
-                  <Route path="/invitations" element={<Invitations />} />
-                  <Route path="/dashboard" element={<DashBoard />} />
-                  <Route path="/logbook" element={<LogBook />} />
-                  <Route path="/user" element={<User />} />
-                </Routes>
+            <>
+            <Route path="/" element={
+              <div style={{ backgroundColor: 'white', height: '100vh' }}>
+                <WelCome />
               </div>
-            </div>
-          } />
+            } />
+              <Route path="*" element={
+                <div className="wrapper">
+                  <SideNav firstName={firstName} />
+                  <div className="content-wrapper">
+                    <Routes>
+                      <Route path="/invitations" element={<Invitations />} />
+                      <Route path="/dashboard" element={<DashBoard />} />
+                      <Route path="/logbook" element={<LogBook />} />
+                      <Route path="/user" element={<User />} />
+                      <Route path="/welcome" element={<Navigate to="/invitations" />} />
+                    </Routes>
+                  </div>
+                </div>
+              } />
+         
+          </>
         )}
-            <Route path="*" element={<Navigate to="/login" />} />
-            </Routes>
+      </Routes>
     </BrowserRouter>
   );
 }

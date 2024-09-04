@@ -94,7 +94,7 @@ function Invitations() {
       </div>
         <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
         style={{ padding: '4px 8px', fontSize: '15px' }}>
-        Schedule Visit
+        Schedule Visit +
       </button>
       </div>  
       <AgGridInvitations rowData={visits} updateVisitStatus={updateVisitStatus} />

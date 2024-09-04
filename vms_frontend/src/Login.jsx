@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import api from './api';
+import background from './assets/vms_background.png';
 
-export default function Login() {
+export default function Login({ onLoginSuccess }) {
     const [showPassword, setShowPassword] = useState(false);
     const [values, setValues] = useState({
         email: '',
@@ -24,12 +25,25 @@ export default function Login() {
         e.preventDefault();
         try {
             const response = await api.post('/login', values);
+    
             if (response.data.status === "Success") {
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('first_name', response.data.first_name);
+                const { token, first_name, role_name } = response.data;
+
+                localStorage.setItem('token', token);
+                localStorage.setItem('first_name', first_name);
+                localStorage.setItem('role_name', role_name);
+    
                 toast.success("Login successful!");
-                navigate('/invitations');
-                window.location.reload();
+    
+                if (role_name === "admin") {
+                    navigate('/dashboard');  
+                } else if (role_name === "staff") {
+                    navigate('/invitations');  
+                } else {
+                    navigate('/');  
+                }
+                onLoginSuccess({ first_name });
+    
             } else {
                 toast.error(response.data.message);  
             }
@@ -39,10 +53,51 @@ export default function Login() {
         }
     };
 
+
     return (
-        <div className='d-flex justify-content-center align-items-center'>
-            <div className='p-3 rounded w-50' >
-                <h4 className='text-center'>Sign In</h4>
+        <div style={{
+            position: 'relative',
+            minHeight: '100vh',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+              {/* Blurred Background Image */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${background})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                filter: 'blur(8px)', 
+                zIndex: 0
+              }}></div>
+  
+              {/* Unblurred Login Form */}
+              <div style={{
+              position: 'relative',
+              zIndex: 1,
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '500px',
+              margin: 'auto',
+              top: '50%',
+              transform: 'translateY(-50%)'
+            }}>
+
+               <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}>
+                    <i className="fa-solid fa-lock" style={{ fontSize: '2rem', color: '#000', }}></i>
+                    <h4>Sign In</h4>
+                </div>
                 <form onSubmit={handleSubmit}>
                     <div className='mb-3'>
                         <label htmlFor='email'>Email</label>
@@ -75,5 +130,6 @@ export default function Login() {
                 </form>
             </div>
         </div>
+        
     );
 }

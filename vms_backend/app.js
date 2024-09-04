@@ -63,7 +63,6 @@ async function getUserByEmail(email) {
 
 
 app.post('/login', async (req, res) => {
-    console.log('sasasas')
     const { email, password } = req.body;
     try {
         const user = await getUserByEmail(email);
@@ -198,7 +197,26 @@ app.get('/api/visits', async (req, res) => {
     }
 });
 
+app.get('/api/dashboard', (req, res) => {
+    const { date } = req.query;
+    const selectedDate = date || new Date().toISOString().slice(0, 10); 
 
+    const query = `
+        SELECT
+            (SELECT COUNT(*) FROM visits WHERE status = 'Pending' AND DATE(visit_date) = ?) AS pending_count_visit,
+            (SELECT COUNT(*) FROM visits WHERE status = 'Approved' AND DATE(visit_date) = ?) AS approved_count_visit,
+            (SELECT COUNT(*) FROM visits WHERE status = 'Rejected' AND DATE(visit_date) = ?) AS rejected_count_visit,
+            (SELECT COUNT(*) FROM visits WHERE checkin_time IS NOT NULL AND checkout_time IS NOT NULL AND DATE(visit_date) = ?) AS completedMeetings_visit
+    `;
+
+    connection.query(query, [selectedDate, selectedDate, selectedDate, selectedDate], (error, results) => {
+        if (error) {
+            console.error('Database query error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        res.json(results[0]);
+    });
+});
 
 
 app.listen(5000, (error) => {

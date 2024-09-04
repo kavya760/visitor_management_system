@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import logo from  '../assets/reception.png';
 
 // SidebarLink Component
 const SidebarLink = ({ to, icon, label }) => (
@@ -14,9 +15,34 @@ const SidebarLink = ({ to, icon, label }) => (
 // Sidebar Component
 const Sidebar = () => (
   <aside className="main-sidebar sidebar-dark-primary elevation-4">
-      <div className="brand-link">
-  <span className="brand-text font-weight-light">Velankani</span>
+     <div
+  className="brand-link"
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+  }}
+>
+  <img
+    src={logo}
+    alt="Brand Logo"
+    style={{
+      height: '40px', 
+      width: 'auto',  
+    }}
+  />
+  <span
+    className="brand-text font-weight-light"
+    style={{
+      marginLeft: '10px', 
+      fontWeight: '500', 
+      fontSize: '30px',
+    }}
+  ><strong><i>
+    VMS
+    </i></strong></span>
 </div>
+
+<br/><br/>
     <div className="sidebar">
       <nav className="mt-2">
       <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -58,7 +84,7 @@ const NavBar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token'); 
     localStorage.removeItem('first_name');
-    navigate('/login'); 
+    navigate('/'); 
     setUser({});
     window.location.reload();
   };
@@ -80,9 +106,9 @@ const NavBar = () => {
           </li>
         </ul>
         <div className="d-flex align-items-center ms-auto">
-          {user.first_name ? (
-            <span className="navbar-text me-3">Hi, {user.first_name}</span>
-          ) : null}
+        {user.first_name ? (
+        <span className="navbar-text me-3">Hi, {user.first_name}</span>
+    ) : null}
           <button
             onClick={handleLogout}
             className="btn btn-link"
@@ -100,9 +126,9 @@ const NavBar = () => {
 
 
 // SideNav Component
-const SideNav = () => (
+const SideNav = ({ firstName }) => (
   <div>
-    <NavBar />
+    <NavBar firstName={firstName} />
     <Sidebar />
   </div>
 );
