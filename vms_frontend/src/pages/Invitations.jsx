@@ -74,9 +74,24 @@ function Invitations() {
 };
 
 
-  const handleDataChange = () => {
-    fetchVisits();
-  };
+const handleDataChange = async () => {
+  try {
+    const response = await api.get('/api/visits');
+    const newVisits = response.data.filter(visit => !visits.some(v => v.visit_id === visit.visit_id)); 
+    
+    if (newVisits.length > 0) {
+      const sortedNewVisits = newVisits.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setVisits(prevVisits => [
+        ...sortedNewVisits,
+        ...prevVisits.filter(v => !newVisits.some(newVisit => newVisit.visit_id === v.visit_id))
+      ]);
+    }
+  } catch (error) {
+    console.error('Error fetching new visits:', error);
+  }
+};
+
+
 
   return (
     <div className="container">
@@ -96,7 +111,7 @@ function Invitations() {
         style={{ padding: '4px 8px', fontSize: '15px' }}>
         Schedule Visit +
       </button>
-      </div>  
+      </div>  <br/>
       <AgGridInvitations rowData={visits} updateVisitStatus={updateVisitStatus} />
       <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div className="modal-dialog">

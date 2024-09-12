@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import api from './api';
-import background from './assets/vms_background.png';
+
 
 export default function Login({ onLoginSuccess }) {
     const [showPassword, setShowPassword] = useState(false);
@@ -58,30 +58,13 @@ export default function Login({ onLoginSuccess }) {
         <div style={{
             position: 'relative',
             minHeight: '100vh',
-            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-              {/* Blurred Background Image */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundImage: `url(${background})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                filter: 'blur(8px)', 
-                zIndex: 0
-              }}></div>
   
-              {/* Unblurred Login Form */}
-              <div style={{
-              position: 'relative',
-              zIndex: 1,
+            {/* Unblurred Login Form */}
+            <div style={{
               padding: '2rem',
               width: '100%',
               maxWidth: '500px',

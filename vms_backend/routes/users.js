@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+
 // Get all users
 router.get('/', (req, res) => {
     const query = 'SELECT * FROM users';
@@ -16,82 +17,91 @@ router.get('/', (req, res) => {
     });
 });
 
+//create
 router.post('/create', async (req, res) => {
-    const { first_name, last_name, email, phone_number, visit_date, visit_time, host_id, location_id, purpose, visit_type_id } = req.body;
-    console.log('Received create request with data:', req.body);
-    const db = req.db;
+    const { first_name, last_name, email, phone_number, password, role_id } = req.body;
+
+    if (!first_name || !last_name || !email || !role_id) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
 
     try {
-        // Check if the visitor already exists
-        const [userResults] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        let visitor = userResults[0];
-
-        if (!visitor) {
-            // Create new user if not exists
-            const [roleResults] = await db.query('SELECT * FROM roles WHERE role_name = ?', ['user']);
-            const userRole = roleResults[0];
-            const roleId = userRole ? userRole.role_id : null;
-            const defaultPassword = "password";
-            const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
-
-            const [createUserResults] = await db.query(
-                'INSERT INTO users (first_name, last_name, email, phone_number, password, role_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [first_name, last_name, email, phone_number, hashedPassword, roleId]
-            );
-
-            const [newUserResults] = await db.query('SELECT * FROM users WHERE user_id = ?', [createUserResults.insertId]);
-            visitor = newUserResults[0];
+        if (!password) {
+            return res.status(400).json({ message: 'Password is required' });
         }
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Create visit
-        const [createVisitResults] = await db.query(
-            'INSERT INTO visits (visit_date, visit_time, visitor_id, host_id, location_id, purpose, visit_type_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [visit_date, visit_time || null, visitor.user_id, host_id, location_id, purpose, visit_type_id, 'Pending']
-        );
-
-        const [visitResults] = await db.query('SELECT * FROM visits WHERE visit_id = ?', [createVisitResults.insertId]);
-        const fullVisit = visitResults[0];
-
-        if (!fullVisit) {
-            return res.status(500).json({ error: "Failed to fetch visit details" });
-        }
-
-        const visitDetails = {
-            ...fullVisit,
-            visitor,
-            host: fullVisit.host_id,
-            visit_type: fullVisit.visit_type_id,
-            location: fullVisit.location_id,
-            visit_date: fullVisit.visit_date,
-            visit_time: fullVisit.visit_time,
-            checkin_time: null,
-            checkout_time: null,
-            confirmation_id: null
-        };
-
-        res.status(201).json({ message: "Visit created successfully", visit: visitDetails });
-
+        const query = `
+            INSERT INTO users (first_name, last_name, email, phone_number, password, role_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        const params = [first_name, last_name, email, phone_number, hashedPassword, role_id];
+        const [results] = await req.db.query(query, params);
+        res.status(201).json({ message: 'User created successfully', userId: results.insertId });
     } catch (error) {
-        console.error("Error creating or processing visit:", error);
-        res.status(500).json({ error: "Failed to create visit", details: error.message });
+        console.error('Error creating user:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+//update
+router.put('/update/:id', async (req, res) => {
+    const userId = req.params.id;
+    const { first_name, last_name, email, phone_number, password, role_id } = req.body;
+
+    try {
+        const hashedPassword = password ? await bcrypt.hash(password, saltRounds) : null;
+        const query = `
+            UPDATE users 
+            SET 
+                first_name = ?, 
+                last_name = ?, 
+                email = ?, 
+                phone_number = ?, 
+                role_id = ? 
+                ${password ? ', password = ?' : ''} 
+            WHERE user_id = ?
+        `;
+        
+        const params = [
+            first_name, 
+            last_name, 
+            email, 
+            phone_number, 
+            role_id, 
+            ...(password ? [hashedPassword] : []), 
+            userId
+        ];
+
+        const [results] = await req.db.query(query, params);
+
+        if (results.affectedRows === 0) {
+            res.status(404).json({ message: 'User not found' });
+        } else {
+            res.status(200).json({ message: 'User updated successfully' });
+        }
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 // Delete user
-router.delete('/delete/:id', (req, res) => {
-    const query = 'DELETE FROM users WHERE user_id = ?';
-    req.db.query(query, [req.params.id], (err, results) => { 
-        if (err) {
-            console.error("Error deleting user:", err);
-            res.status(500).json({ message: "Error deleting user" });
-            return;
-        }
+router.delete('/delete/:id', async (req, res) => {
+    const userId = req.params.id;
+    try {
+        const query = 'DELETE FROM users WHERE user_id = ?';
+        const [results] = await req.db.query(query, [userId]);
+
         if (results.affectedRows === 0) {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ message: 'User not found' });
         } else {
-            res.json(results);
+            res.status(200).json({ message: 'User deleted successfully' });
         }
-    });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 module.exports = router;

@@ -46,10 +46,10 @@ const Sidebar = () => (
     <div className="sidebar">
       <nav className="mt-2">
       <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <SidebarLink to="/" icon="fa-home" label="Home" />
           <SidebarLink to="/dashboard" icon="fa-tachometer-alt" label="Dashboard" />
           <SidebarLink to="/logbook" icon="fa-book" label="LogBook" />
           <SidebarLink to="/invitations" icon="fa-envelope" label="Invitations" />
+          <SidebarLink to="/user" icon="fa-solid fa-user" label="User" />
         </ul>
       </nav>
     </div>
@@ -113,7 +113,7 @@ const NavBar = () => {
             onClick={handleLogout}
             className="btn btn-link"
             data-bs-toggle="tooltip"
-            data-bs-placement="bottom"
+            data-bs-placement="top"
             title="Logout"
           >
             <i className="bi bi-box-arrow-right fs-4 " style={{ fontSize: '1.3rem', color: 'black' }}></i>

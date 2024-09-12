@@ -8,7 +8,8 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  background-color: #242424; /* Set a consistent background color */
+  background-color: transparent;
+  /* background-color: #242424; Set a consistent background color */
 }
 
 #root {
@@ -119,5 +120,3 @@ button:focus-visible {
 .navbar-custom .nav-link {
   color: white;
 }
-
-

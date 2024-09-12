@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
-const sendEmail = require('./sendMail');
+const getVisitById = require('./utilities/deserialize');
 
 const app = express();
 app.use(express.json());
@@ -47,6 +47,8 @@ app.use('/api/users', users);
 app.use('/api/visits', invitations);
 app.use('/api/visits', logBook);
 app.use( dashboard);
+
+
 
 async function getUserByEmail(email) {
     try {
@@ -90,17 +92,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.post('/sendemail', async (req, res) => {
-    const { to, subject, htmlContent } = req.body;
-
-    try {
-        await sendEmail(to, subject, htmlContent);
-        res.status(200).json({ message: 'Email sent successfully' });
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ error: 'Failed to send email' });
-    }
-});
 
 
 app.get('/api/locations', async (req, res) => {
@@ -123,13 +114,28 @@ app.get('/api/visittypes', async (req, res) => {
     }
 });
 
-app.get('/api/get_users', async (req, res) => {
+app.get('/api/getusers', async (req, res) => {
     try {
-        const [results] = await req.db.query('SELECT * FROM users');
+        const query = `
+        SELECT users.*, roles.role_name
+        FROM users
+        JOIN roles ON users.role_id = roles.role_id
+    `;
+        const [results] = await req.db.query(query);
         res.json(results);
     } catch (err) {
         console.error("Error fetching users:", err);
         res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
+
+app.get('/api/roles', async (req, res) => {
+    try {
+        const [results] = await req.db.query('SELECT * FROM roles');
+        res.json(results);
+    } catch (err) {
+        console.error("Error fetching roles:", err);
+        res.status(500).json({ error: "Failed to fetch roles" });
     }
 });
 
@@ -218,6 +224,16 @@ app.get('/api/dashboard', (req, res) => {
     });
 });
 
+app.get('/api/visits/:visitId', async (req, res) => {
+    const { visitId } = req.params;
+
+    try {
+        const visitDetails = await getVisitById(db, visitId);
+        res.status(200).json(visitDetails);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch visit details" });
+    }
+});
 
 app.listen(5000, (error) => {
     if (error) {

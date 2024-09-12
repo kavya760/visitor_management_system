@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
-// Function to send an email
+
 const sendEmail = async (to, subject, htmlContent) => {
-    console.log('sendEmail function called');
     console.log('sendEmail function called');
     console.log('Recipient:', to);
     console.log('Subject:', subject);

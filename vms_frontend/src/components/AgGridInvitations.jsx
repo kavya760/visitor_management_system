@@ -1,17 +1,19 @@
 import React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-import axios from 'axios';
+import 'ag-grid-community/styles/ag-theme-quartz.css';
+// import 'ag-grid-community/styles/ag-theme-quartz-dark.css';
 
-const sendEmail = async (visitId, status) => {
-  try {
-    const response = await axios.post('http://localhost:5000/sendemail', { visitId, status });
-    console.log(`Email sent for visit ${visitId} with status ${status}`);
-  } catch (error) {
-    console.error('Error sending email:', error);
-  }
-};
+
+
+// const sendEmail = async (visitId, status) => {
+//   try {
+//     const response = await axios.post('http://localhost:5000/sendemail', { visitId, status });
+//     console.log(`Email sent for visit ${visitId} with status ${status}`);
+//   } catch (error) {
+//     console.error('Error sending email:', error);0
+//   }
+// };
 
 const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
   
@@ -21,7 +23,6 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
     const handleApprove = async () => {
       try {
         await updateVisitStatus(data.visit_id, 'approved');
-        await sendEmail(data.visit_id, 'approved');
       } catch (error) {
         console.error('Error handling approval:', error);
       }
@@ -30,7 +31,6 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
     const handleReject = async () => {
       try {
         await updateVisitStatus(data.visit_id, 'rejected');
-        await sendEmail(data.visit_id, 'rejected');
       } catch (error) {
         console.error('Error handling rejection:', error);
       }
@@ -94,7 +94,7 @@ const AgGridInvitations = ({ rowData, updateVisitStatus}) => {
   ];
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 400, width: '100%' }}>
+    <div className="ag-theme-quartz" style={{ height: 400, width: '100%' }}>
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}

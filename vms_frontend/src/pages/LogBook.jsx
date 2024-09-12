@@ -112,7 +112,7 @@ function LogBook() {
       filteredData = filteredData.filter(visit => visit.status === 'Approved');
     } else {
       if (selectedFilter.includes('all')) {
-        filteredData = rowData; 
+        filteredData = [...rowData];  
       } else {
         if (selectedFilter.includes('checkedin')) {
           filteredData = filteredData.filter(visit => visit.checkin_time); 

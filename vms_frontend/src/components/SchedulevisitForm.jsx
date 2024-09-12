@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-
+import { useNavigate } from 'react-router-dom'; 
 function SchedulevisitForm({onChange}) {
   const [locations, setLocations] = useState([]);
   const [visittypes, setVisittypes] = useState([]);
@@ -24,6 +24,8 @@ function SchedulevisitForm({onChange}) {
   
   const [editMode, setEditMode] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -34,7 +36,7 @@ function SchedulevisitForm({onChange}) {
       try {
         const locationsRes = await axios.get('http://localhost:5000/api/locations');
         const visitTypesRes = await axios.get('http://localhost:5000/api/visittypes');
-        const usersRes = await axios.get('http://localhost:5000/api/get_users');
+        const usersRes = await axios.get('http://localhost:5000/api/getusers');
         setLocations(locationsRes.data);
         setVisittypes(visitTypesRes.data);
         setUsers(usersRes.data);        
@@ -50,23 +52,30 @@ function SchedulevisitForm({onChange}) {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    setLoading(true); 
     try {
-      const formattedDate = new Date(formData.date).toISOString().split(' ')[0];  
+      const formattedDate = new Date(formData.date).toISOString().split('T')[0];  
       const formattedTime = new Date(formData.date).toTimeString().split(' ')[0];
       const dataToSend = {
         ...formData,
         visit_date: formattedDate,
         visit_time: formattedTime
-    };
-      console.log("Form Data being sent:", formData);
-      await axios.post('http://localhost:5000/api/users/create', dataToSend);
+      };
+      console.log("Form Data being sent:", dataToSend);
+      const response = await axios.post('http://localhost:5000/api/visits/create', dataToSend);
+      console.log('response.data', response.data);
+      const newVisitId = response?.data?.visit_id;     
       toast.success("Schedule visit created successfully!");
       resetForm();
+      navigate(`/visitor/${newVisitId}`);
     } catch (error) {
       toast.error("Error creating schedule visit!");
+      console.error("Error details:", error); 
+    } finally {
+      setLoading(false);
     }
   };
-
+  
 
   const resetForm = () => {
     setFormData({
@@ -84,43 +93,24 @@ function SchedulevisitForm({onChange}) {
     setSelectedUserId(null);
   };
 
-  const handleEdit = async (user_id) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/users/${user_id}`);
-      setFormData(response.data);
-      setSelectedUserId(user_id);
-      setEditMode(true);
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      setError(error.message);
-    }
-  };
-
-  const handleDelete = async (user_id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/users/delete/${user_id}`);
-      toast.success("Schedule visit deleted successfully!");
-    } catch (error) {
-      toast.error("Error deleting Schedule visit!");
-      console.error('Error deleting user:', error);
-    }
-  };
 
   return (
     <div className="container mt-2">
       <h3 className="text-center" style={{ textDecoration: 'underline' }}>Schedule Visit</h3>
       <form className="row g-3 mt-3" onSubmit={editMode ? handleUpdate : handleCreate}>
         <div className="col-md-6">
-          <input type="text" className="form-control" id="first_name" placeholder="First Name*" value={formData.first_name} onChange={handleChange} />
+          <input type="text" className="form-control" id="first_name" placeholder="First Name" value={formData.first_name} onChange={handleChange} style={{ paddingRight: '20px' }}/>
+        
         </div>
         <div className="col-md-6">
-          <input type="text" className="form-control" id="last_name" placeholder="Last Name*" value={formData.last_name} onChange={handleChange} />
+          <input type="text" className="form-control" id="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleChange} />
+     
         </div>
         <div className="col-md-6">
-          <input type="email" className="form-control" id="email" placeholder="Email Address*" value={formData.email} onChange={handleChange} />
+          <input type="email" className="form-control" id="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
         </div>
         <div className="col-md-6">
-          <input type="text" className="form-control" id="phone_number" placeholder="Phone Number*" value={formData.phone_number} onChange={handleChange} />
+          <input type="text" className="form-control" id="phone_number" placeholder="Phone Number" value={formData.phone_number} onChange={handleChange} />
         </div>
         <div className="col-md-6">
           <input type="datetime-local" className="form-control" id="date" value={formData.date} onChange={handleChange} />
@@ -134,7 +124,8 @@ function SchedulevisitForm({onChange}) {
           </select>
         </div>
         <div className="col-md-6">
-          <input type="text" className="form-control" id="purpose" placeholder="Purpose of Visit*" value={formData.purpose} onChange={handleChange} />
+          <input type="text" className="form-control" id="purpose" placeholder="Purpose of Visit" value={formData.purpose} onChange={handleChange} />
+         
         </div>
         <div className="col-md-6">
           <select className="form-select" id="host_id" value={formData.host_id} onChange={handleChange}>
@@ -149,7 +140,8 @@ function SchedulevisitForm({onChange}) {
 
         <div className="col-md-6">
           <select className="form-select" id="visit_type_id" value={formData.visit_type_id} onChange={handleChange}>
-            <option value="" disabled>Visit Type</option>
+            <option value="" disabled>Visit Type </option>
+            
             {visittypes.map((visittype) => (
               <option key={visittype.visit_type_id} value={visittype.visit_type_id}>{visittype.visit_type}</option>
             ))}
@@ -159,6 +151,13 @@ function SchedulevisitForm({onChange}) {
           {editMode ? 'Update' : 'Schedule'}
         </button>
       </form>
+      {loading && (
+        <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      )}
       {error && <div className="alert alert-danger mt-3">{error}</div>}
     </div>
   );
