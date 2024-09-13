@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SchedulevisitForm from '../components/SchedulevisitForm';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import 'ag-grid-community/styles/ag-theme-quartz.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import Pikaday from 'pikaday';
@@ -342,7 +342,7 @@ if (selectedDate) {
           </div>
         </div>
         <div className="col-9">
-          <div className="ag-theme-alpine" style={{ height: 400, width: '100%' }}>
+          <div className="ag-theme-quartz" style={{ height: 400, width: '100%' }}>
             <AgGridReact
               rowData={filteredData}
               columnDefs={columnDefs}
@@ -353,6 +353,7 @@ if (selectedDate) {
               overlayNoRowsTemplate={`<span>${error ? error : 'No approved visits found'}</span>`}
 
             />
+            
           </div>
         </div>
       </div>

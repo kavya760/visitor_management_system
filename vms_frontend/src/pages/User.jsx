@@ -28,6 +28,7 @@ function User() {
         role_id: ''
     });
     const [updateError, setUpdateError] = useState(null);
+    const [validationErrors, setValidationErrors] = useState({});
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -54,8 +55,33 @@ function User() {
         fetchRoles();
     }, []);
 
+    const validateForm = (data, isCreateForm = false) => {
+        const { first_name, last_name, email, phone_number, role_id, password } = data;
+        const errors = {};
+
+        if (!first_name) errors.first_name = 'First name is required.';
+        if (!last_name) errors.last_name = 'Last name is required.';
+        if (!email) errors.email = 'Email is required.';
+        else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) errors.email = 'Invalid email format.';
+        }
+        if (!phone_number) errors.phone_number = 'Phone number is required.';
+        else {
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(phone_number)) errors.phone_number = 'Phone number must be 10 digits.';
+        }
+        if (!role_id) errors.role_id = 'Role is required.';
+        if (isCreateForm && (!password || password.length < 6)) errors.password = 'Password must be at least 6 characters.';
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm(createFormData, true)) return;
         console.log('Form Data:', createFormData);
         try {
             const response = await axios.post('http://localhost:5000/api/users/create', createFormData);
@@ -72,6 +98,7 @@ function User() {
                 phone_number: '',
                 role_id: ''
             });
+            setValidationErrors({});
         } catch (error) {
             console.error('Error creating user:', error);
             toast.error('Error creating user!');
@@ -114,6 +141,7 @@ function User() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm(formData)) return;
         try {
             await axios.put(`http://localhost:5000/api/users/update/${selectedUser.user_id}`, formData);
             const updatedUsers = users.map(user =>
@@ -123,6 +151,7 @@ function User() {
             toast.success('User updated successfully!');
             const modal = window.bootstrap.Modal.getInstance(document.getElementById('updateModal'));
             modal.hide();
+            setValidationErrors({});
         } catch (error) {
             console.error('Error updating user:', error);
             toast.error('Error updating user!');
@@ -161,16 +190,13 @@ function User() {
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3 className="modal-title text-center" style={{ textDecoration: 'underline', marginBottom: '0', marginTop: '0' }}>Create User</h3>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h3>Create User</h3>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div className="modal-body">
                             <form className="row g-3 mt-3" onSubmit={handleCreateSubmit}>
                                 <div className="col-md-6">
-                                <label htmlFor="first_name" style={{ display: 'block', marginBottom: '0.5em' }}>
-                                        First Name
-                                        <span style={{ color: 'red', marginLeft: '0.25em' }}>*</span>
-                                    </label>
+                                    <label htmlFor="first_name">First Name<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -179,12 +205,10 @@ function User() {
                                         onChange={handleCreateChange}
                                         required
                                     />
+                                    {validationErrors.first_name && <div className="text-danger">{validationErrors.first_name}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="last_name" style={{ display: 'block', marginBottom: '0.5em' }}>
-                                        Last Name
-                                        <span style={{ color: 'red', marginLeft: '0.25em' }}>*</span>
-                                    </label>
+                                    <label htmlFor="last_name">Last Name<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -193,12 +217,10 @@ function User() {
                                         onChange={handleCreateChange}
                                         required
                                     />
+                                    {validationErrors.last_name && <div className="text-danger">{validationErrors.last_name}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5em' }}> 
-                                        Email Address
-                                        <span style={{ color: 'red', marginLeft: '0.25em' }}>*</span>
-                                        </label>
+                                    <label htmlFor="email">Email Address<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="email"
                                         className="form-control"
@@ -207,24 +229,22 @@ function User() {
                                         onChange={handleCreateChange}
                                         required
                                     />
+                                    {validationErrors.email && <div className="text-danger">{validationErrors.email}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                        <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5em' }}>
-                                            Password
-                                            <span style={{ color: 'red', marginLeft: '0.25em' }}>*</span>
-                                        </label>
-                                        <input
-                                            type="password"
-                                            className="form-control"
-                                            id="password"
-                                            value={createFormData.password}
-                                            onChange={handleCreateChange}
-                                            required
-                                        />
-                                    </div>
-
+                                    <label htmlFor="password">Password<span style={{ color: 'red' }}> *</span></label>
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        id="password"
+                                        value={createFormData.password}
+                                        onChange={handleCreateChange}
+                                        required
+                                    />
+                                    {validationErrors.password && <div className="text-danger">{validationErrors.password}</div>}
+                                </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="phone_number" className="form-label">Phone Number</label>
+                                    <label htmlFor="phone_number">Phone Number<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -233,22 +253,27 @@ function User() {
                                         onChange={handleCreateChange}
                                         required
                                     />
+                                    {validationErrors.phone_number && <div className="text-danger">{validationErrors.phone_number}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="role_id" style={{ display: 'block', marginBottom: '0.5em' }}>
-                                        Role
-                                        <span style={{ color: 'red', marginLeft: '0.25em' }}>*</span>
-                                        </label>
-                                    <select className="form-select" id="role_id" value={createFormData.role_id} onChange={handleCreateChange} required>
+                                    <label htmlFor="role_id">Role<span style={{ color: 'red' }}> *</span></label>
+                                    <select
+                                        className="form-select"
+                                        id="role_id"
+                                        value={createFormData.role_id}
+                                        onChange={handleCreateChange}
+                                        required
+                                    >
                                         <option value="" disabled>Choose role</option>
                                         {roles.map(role => (
                                             <option key={role.role_id} value={role.role_id}>{role.role_name}</option>
                                         ))}
                                     </select>
+                                    {validationErrors.role_id && <div className="text-danger">{validationErrors.role_id}</div>}
                                 </div>
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" className="btn btn-primary" ata-bs-dismiss="modal">Create</button>
+                                    <button type="submit" className="btn btn-primary" data-bs-dismiss="modal">Create</button>
                                 </div>
                             </form>
                         </div>
@@ -256,18 +281,18 @@ function User() {
                 </div>
             </div>
 
-            {/* update modal */}
+            {/* Update Modal */}
             <div className="modal fade" id="updateModal" tabIndex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3 className="modal-title text-center" style={{ textDecoration: 'underline', marginBottom: '0', marginTop: '0' }}>Update User</h3>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h3>Update User</h3>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div className="modal-body">
                             <form className="row g-3 mt-3" onSubmit={handleSubmit}>
                                 <div className="col-md-6">
-                                    <label htmlFor="first_name" className="form-label">First Name</label>
+                                    <label htmlFor="first_name">First Name<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -276,9 +301,10 @@ function User() {
                                         onChange={handleChange}
                                         required
                                     />
+                                    {validationErrors.first_name && <div className="text-danger">{validationErrors.first_name}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="last_name" className="form-label">Last Name</label>
+                                    <label htmlFor="last_name">Last Name<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -287,9 +313,10 @@ function User() {
                                         onChange={handleChange}
                                         required
                                     />
+                                    {validationErrors.last_name && <div className="text-danger">{validationErrors.last_name}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="email" className="form-label">Email Address</label>
+                                    <label htmlFor="email">Email Address<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="email"
                                         className="form-control"
@@ -298,9 +325,10 @@ function User() {
                                         onChange={handleChange}
                                         required
                                     />
+                                    {validationErrors.email && <div className="text-danger">{validationErrors.email}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="phone_number" className="form-label">Phone Number</label>
+                                    <label htmlFor="phone_number">Phone Number<span style={{ color: 'red' }}> *</span></label>
                                     <input
                                         type="text"
                                         className="form-control"
@@ -309,19 +337,27 @@ function User() {
                                         onChange={handleChange}
                                         required
                                     />
+                                    {validationErrors.phone_number && <div className="text-danger">{validationErrors.phone_number}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label htmlFor="role_id" className="form-label">Role</label>
-                                    <select className="form-select" id="role_id" value={formData.role_id} onChange={handleChange} required>
+                                    <label htmlFor="role_id">Role<span style={{ color: 'red' }}> *</span></label>
+                                    <select
+                                        className="form-select"
+                                        id="role_id"
+                                        value={formData.role_id}
+                                        onChange={handleChange}
+                                        required
+                                    >
                                         <option value="" disabled>Choose role</option>
                                         {roles.map(role => (
                                             <option key={role.role_id} value={role.role_id}>{role.role_name}</option>
                                         ))}
                                     </select>
+                                    {validationErrors.role_id && <div className="text-danger">{validationErrors.role_id}</div>}
                                 </div>
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" className="btn btn-primary" ata-bs-dismiss="modal">Update</button>
+                                    <button type="submit" className="btn btn-primary" data-bs-dismiss="modal">Update</button>
                                 </div>
                             </form>
                         </div>

@@ -15,32 +15,33 @@ const SidebarLink = ({ to, icon, label }) => (
 // Sidebar Component
 const Sidebar = () => (
   <aside className="main-sidebar sidebar-dark-primary elevation-4">
-     <div
-  className="brand-link"
-  style={{
-    display: 'flex',
-    alignItems: 'center',
-  }}
->
+     
+  <a href='#' className="brand-link">
+
   <img
     src={logo}
-    alt="Brand Logo"
-    style={{
-      height: '40px', 
-      width: 'auto',  
-    }}
+    alt="AdminLTE Logo"
+    className='brand-image img-circle elevation-6'
+    height="80" width="80"
+   
   />
-  <span
+  <span className='brand-text font-weight-light'> VISITOR FLOW</span>
+    
+  </a>
+  
+
+  
+  {/* <span
     className="brand-text font-weight-light"
     style={{
       marginLeft: '10px', 
-      fontWeight: '500', 
-      fontSize: '30px',
+      fontWeight: '400', 
+      fontSize: '25px',
     }}
   ><strong><i>
-    VMS
-    </i></strong></span>
-</div>
+    VISITOR FLOW
+    </i></strong></span> */}
+
 
 <br/><br/>
     <div className="sidebar">
@@ -90,7 +91,7 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="main-header navbar navbar-expand navbar-light navbar-white">
+    <nav className="main-header navbar navbar-expand navbar-cyan" >
       <div className="container-fluid d-flex justify-content-between align-items-center">
         <ul className="navbar-nav d-flex align-items-center">
           <li className="nav-item">
@@ -105,10 +106,10 @@ const NavBar = () => {
             </a>
           </li>
         </ul>
-        <div className="d-flex align-items-center ms-auto">
-        {user.first_name ? (
-        <span className="navbar-text me-3">Hi, {user.first_name}</span>
-    ) : null}
+        <div className="d-flex align-items-center ms-auto" style={{ fontSize: '1.2rem', marginLeft: '-10px' }}>
+          {user.first_name ? (
+            <span className="navbar-text me-3 ms-10 text-light">Hi, {user.first_name}</span>
+          ) : null}
           <button
             onClick={handleLogout}
             className="btn btn-link"
@@ -116,10 +117,10 @@ const NavBar = () => {
             data-bs-placement="top"
             title="Logout"
           >
-            <i className="bi bi-box-arrow-right fs-4 " style={{ fontSize: '1.3rem', color: 'black' }}></i>
+            <i className="fa-sharp fa-solid fa-arrow-right-from-bracket fs-4" style={{ fontSize: '1.3rem', color: 'black' }}></i>
           </button>
         </div>
-      </div>
+        </div>
     </nav>
   );
 };
